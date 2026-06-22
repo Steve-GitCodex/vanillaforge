@@ -7,6 +7,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-06-22
+
+This release adds the **CSS/theming plugin** — the first batteries-included styling
+subsystem. Apps now look sensible out of the box without Tailwind, Bootstrap, or any
+external CSS library, while remaining fully themeable.
+
+### Added
+
+#### Theme plugin (`src/plugins/theme/`)
+- `themePlugin` — install with `app.use(themePlugin)` or
+  `app.use(themePlugin, { tokens: { primary: '#6366f1', radius: '8px' } })`.
+- `ThemeService` — creates a `<style id="vf-theme">` in `<head>` and fills it with
+  a `:root {}` block of CSS custom properties (`--vf-primary`, `--vf-radius`, …).
+- **20 default tokens:** `primary`, `primaryDark`, `secondary`, `surface`,
+  `background`, `text`, `textMuted`, `border`, `danger`, `success`, `warning`,
+  `radius`, `radiusSm`, `radiusLg`, `fontSans`, `fontMono`,
+  `shadowSm`, `shadowMd`, `shadowLg`, `space`.
+- Token names follow camelCase in JS and `--vf-kebab-case` in CSS
+  (`primaryDark` → `--vf-primary-dark`).
+- `setTokens(map)` — merge new values and live-update the injected stylesheet.
+  Returns `this` for chaining.
+- `getToken(name)` — read the current resolved value; returns `null` for unknown
+  names.
+- `base: false` option — inject only the `:root {}` token block, skip the
+  base stylesheet.
+- Idempotent `<style>` element — re-using an existing `#vf-theme` element so a
+  second ThemeService (e.g. after `app.provide('theme', …)`) doesn't leave orphans.
+- Base stylesheet (`src/plugins/theme/base-styles.js`) — included by default:
+  box-sizing reset, body font/color/background wired to tokens, `.vf-card` surface
+  card, `.vf-btn` + `.vf-btn-primary/secondary/danger/success`, `.vf-icon` alignment.
+- `themePlugin` exported from `src/framework.js` as part of the public API.
+- `FRAMEWORK_VERSION` bumped to `1.2.0`.
+
+#### Documentation
+- `docs/roadmap.md` — CSS/theming moved to "Done"; alerts/notifications is now next.
+
+#### Tests
+- `tests/theme.test.js` — 16 tests covering: style element creation, `:root` block,
+  camelCase→kebab conversion, default token values, token overrides, base styles
+  inclusion/exclusion, idempotent element reuse, `setTokens()` update and chaining,
+  `getToken()` read/update/null, and `themePlugin` integration via `createApp`.
+
+#### Examples
+- `examples/router-app/index.html` installs `themePlugin` with custom token overrides
+  and replaces hard-coded hex values with `var(--vf-*)` references throughout its
+  hand-written stylesheet.
+
 ## [1.1.0] - 2026-06-22
 
 This release lays the **long-term foundation** for a batteries-included framework:

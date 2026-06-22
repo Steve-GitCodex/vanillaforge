@@ -5,48 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Routing + Composition - VanillaForge</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f4f5f7;
-            color: #1f2933;
-            padding: 40px 20px;
-        }
+        /* App shell — not covered by the VanillaForge base stylesheet */
+        body { padding: 40px 20px; }
         .shell { max-width: 640px; margin: 0 auto; }
+
         .topbar {
             display: flex; align-items: center; gap: 12px;
             margin-bottom: 24px;
         }
         .topbar h2 { font-size: 1.1rem; }
         .topbar .muted { font-size: .85rem; }
-        .card {
-            background: #fff; border-radius: 12px; padding: 28px;
-            box-shadow: 0 10px 30px rgba(0,0,0,.06);
-        }
+
         h1 { margin-bottom: 8px; }
         .muted {
-            color: #7b8794;
+            color: var(--vf-text-muted);
             display: flex; align-items: center; gap: 4px;
             margin-top: 4px; font-size: .9rem;
         }
         .muted .vf-icon { opacity: .7; }
-        .role { color: #3b82f6; font-weight: 600; margin-bottom: 12px; }
+        .role { color: var(--vf-primary); font-weight: 600; margin-bottom: 12px; }
 
         /* User list */
-        .user-list {
-            list-style: none; margin-top: 16px;
-        }
+        .user-list { list-style: none; margin-top: 16px; }
 
         /* User card (child component) */
-        .component.user-card {
-            display: block;
-        }
-        .user-card {
-            border-top: 1px solid #eef1f4;
-        }
-        .user-card:first-child {
-            border-top: none;
-        }
+        .component.user-card { display: block; }
+        .user-card { border-top: 1px solid var(--vf-border); }
+        .user-card:first-child { border-top: none; }
         .user-card-row {
             display: flex; align-items: center;
             justify-content: space-between;
@@ -56,32 +41,34 @@
             display: flex; align-items: center; gap: 12px;
             text-decoration: none; color: inherit; flex: 1;
         }
-        .user-card-link:hover .user-card-name { color: #3b82f6; }
+        .user-card-link:hover .user-card-name { color: var(--vf-primary); }
         .user-card-avatar {
             width: 36px; height: 36px;
             border-radius: 50%;
-            background: #3b82f6;
+            background: var(--vf-primary);
             color: #fff;
             display: flex; align-items: center; justify-content: center;
             font-weight: 700; font-size: .95rem;
             flex-shrink: 0;
         }
         .user-card-name { display: block; font-weight: 600; }
-        .user-card-role { font-size: .82rem; color: #7b8794; }
+        .user-card-role { font-size: .82rem; color: var(--vf-text-muted); }
         .user-card-toggle {
             background: none; border: none; cursor: pointer;
-            color: #7b8794; padding: 4px; border-radius: 4px;
+            color: var(--vf-text-muted); padding: 4px;
+            border-radius: var(--vf-radius-sm);
             display: flex; align-items: center;
         }
-        .user-card-toggle:hover { background: #f0f4f8; color: #1f2933; }
+        .user-card-toggle:hover { background: var(--vf-border); color: var(--vf-text); }
         .user-card-bio {
             padding: 0 4px 14px 4px;
-            color: #374151; font-size: .92rem; line-height: 1.55;
+            color: var(--vf-text); font-size: .92rem; line-height: 1.55;
         }
         .user-card-bio p { margin-bottom: 10px; }
         .user-card-detail-link {
             display: inline-flex; align-items: center; gap: 4px;
-            color: #3b82f6; text-decoration: none; font-weight: 600; font-size: .88rem;
+            color: var(--vf-primary); text-decoration: none;
+            font-weight: 600; font-size: .88rem;
         }
         .user-card-detail-link:hover { text-decoration: underline; }
 
@@ -93,7 +80,7 @@
         .detail-avatar {
             width: 56px; height: 56px;
             border-radius: 50%;
-            background: #3b82f6;
+            background: var(--vf-primary);
             color: #fff;
             display: flex; align-items: center; justify-content: center;
             font-weight: 700; font-size: 1.4rem;
@@ -103,12 +90,9 @@
         .btn {
             display: inline-flex; align-items: center; gap: 6px;
             margin-bottom: 16px;
-            color: #3b82f6; text-decoration: none; font-weight: 600;
+            color: var(--vf-primary); text-decoration: none; font-weight: 600;
         }
         .btn:hover { text-decoration: underline; }
-
-        /* VanillaForge icon base */
-        .vf-icon { vertical-align: middle; }
     </style>
 </head>
 <body>
@@ -121,7 +105,7 @@
     </div>
 
     <script type="module">
-        import { createApp, iconsPlugin } from '../../src/framework.js';
+        import { createApp, iconsPlugin, themePlugin } from '../../src/framework.js';
         import { UsersList } from './components/users-list.js';
         import { UserDetail } from './components/user-detail.js';
 
@@ -137,7 +121,16 @@
             debug: true,
         });
 
-        // Install the built-in icons plugin (no Font Awesome needed).
+        // Install the theme plugin — injects CSS custom properties and base styles.
+        app.use(themePlugin, {
+            tokens: {
+                primary: '#3b82f6',
+                radius: '8px',
+                radiusLg: '14px',
+            },
+        });
+
+        // Install the icons plugin (no Font Awesome needed).
         app.use(iconsPlugin);
 
         await app.initialize({

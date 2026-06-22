@@ -9,6 +9,21 @@ Every item below plugs into the **plugin/service registry** added in v1.1. See
 
 ---
 
+## Done (v1.2)
+
+### CSS / theming plugin
+- `themePlugin` — install with `app.use(themePlugin)` or with token overrides.
+- 20 default design tokens injected as `--vf-*` CSS custom properties on `:root`.
+- Token names: camelCase in JS → `--vf-kebab-case` in CSS.
+- `ThemeService.setTokens(map)` — live-update tokens after install.
+- `ThemeService.getToken(name)` — read any token value.
+- `base: false` option skips the base stylesheet.
+- Base stylesheet: box-sizing reset, body font/color wired to tokens, `.vf-card`,
+  `.vf-btn` + variants (`-primary`, `-secondary`, `-danger`, `-success`), `.vf-icon`.
+- Exported from `src/framework.js` as part of the public API.
+
+---
+
 ## Done (v1.1)
 
 ### Plugin / service-registry foundation
@@ -37,29 +52,7 @@ Every item below plugs into the **plugin/service registry** added in v1.1. See
 
 ## Next: batteries-included subsystems
 
-### 1. CSS / theming plugin
-
-**Why:** Eliminates the need for Tailwind or Bootstrap for basic styling. Apps should look good
-out of the box with sensible defaults but be fully themeable.
-
-**Shape of the API:**
-```js
-import { themePlugin } from './src/plugins/theme/theme-plugin.js';
-
-app.use(themePlugin, {
-  tokens: { primary: '#3b82f6', radius: '6px', fontSans: 'system-ui' }
-});
-```
-- Injects a `<style>` block of CSS custom properties (`--vf-primary`, `--vf-radius`, …).
-- Ships a small base stylesheet (reset, sensible form styles, flexbox helpers) as a built-in
-  that components can opt into.
-- Builds on the existing CSS auto-discovery in `scripts/css-discovery.js`.
-
-**Where it plugs in:** `src/plugins/theme/` — `themePlugin` + `ThemeService`.
-
----
-
-### 2. Alerts / notification plugin
+### 1. Alerts / notification plugin
 
 **Why:** Replaces SweetAlert and the current hard-coded `Notification` class. Users get great
 toasts and modals without installing a third-party library.
@@ -78,7 +71,7 @@ this.service('alerts').confirm('Delete?', { onConfirm: () => this.deleteItem() }
 
 ---
 
-### 3. Self-hosted fonts plugin
+### 2. Self-hosted fonts plugin
 
 **Why:** Replaces Google Fonts. Zero external requests, no privacy concerns, fonts load instantly
 from the same server.
@@ -101,7 +94,7 @@ app.use(fontsPlugin, {
 
 ## Then: developer experience
 
-### 4. Fast onboarding / scaffold CLI
+### 3. Fast onboarding / scaffold CLI
 
 **Why:** "Build apps quickly" means starting a new project in under a minute.
 
@@ -116,7 +109,7 @@ app.use(fontsPlugin, {
 
 ## Later: core engine upgrades
 
-### 5. Signals / fine-grained reactivity
+### 4. Signals / fine-grained reactivity
 
 **Why:** Currently `setState()` re-renders the whole component template then morphs. For complex
 components this is wasteful. Signals would let only the parts of the DOM that depend on a changed
@@ -135,7 +128,7 @@ already notes this in its header comment.
 
 ---
 
-### 6. Data loading + shared state
+### 5. Data loading + shared state
 
 **Why:** Real apps need async data (route loaders) and state shared across components (a store).
 

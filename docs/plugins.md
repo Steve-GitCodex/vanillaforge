@@ -135,6 +135,239 @@ app.provide('icons', {
 
 ---
 
+## Built-in fonts plugin
+
+The fonts plugin ships self-hosted, Latin-subset variable fonts as bundled data URIs — no
+external requests, no Google Fonts, no file setup required.
+
+### Install (zero config)
+
+```js
+import { createApp, fontsPlugin } from './src/framework.js';
+
+const app = createApp({ ... });
+app.use(fontsPlugin, { families: ['Inter', 'JetBrains Mono'] });
+```
+
+This injects `@font-face` declarations into `<head>` for both families, covering all weights
+and both normal and italic styles.
+
+### Select specific weights or styles
+
+```js
+app.use(fontsPlugin, {
+  families: [
+    { name: 'Inter', weights: [400, 700] },
+    { name: 'JetBrains Mono', styles: ['normal'] },
+  ],
+});
+```
+
+For variable fonts, `weights` is treated as a `[min, max]` range — passing `[400, 700]`
+generates `font-weight: 400 700`.
+
+### Serve your own font files
+
+```js
+app.use(fontsPlugin, {
+  families: ['Inter'],
+  path: '/assets/fonts',  // disables bundled data URIs; uses URL paths instead
+});
+// -> url('/assets/fonts/Inter-Variable.woff2')
+```
+
+### Options
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `families` | `Array` | `[]` | Font families to load. See below for shape. |
+| `path` | `string` | — | URL base for external font files. Omit to use bundled data URIs. |
+| `display` | `string` | `'swap'` | CSS `font-display` value. |
+
+Each entry in `families` can be a plain string (`'Inter'`) or a descriptor object:
+
+| Property | Type | Description |
+|---|---|---|
+| `name` | `string` | Font family name (must match a bundled family or one added via `addFamily()`). |
+| `weights` | `number[]` | Subset of weights. Variable fonts: min/max of the array. |
+| `styles` | `string[]` | `['normal']`, `['italic']`, or `['normal', 'italic']` (default). |
+
+### Bundled families
+
+| Name | Weights | Styles | Theme token |
+|---|---|---|---|
+| `'Inter'` | 100–900 (variable) | normal, italic | `--vf-font-sans` |
+| `'JetBrains Mono'` | 100–800 (variable) | normal, italic | `--vf-font-mono` |
+
+### Theme token integration
+
+When `themePlugin` is also installed, loading Inter automatically sets `--vf-font-sans`
+to `'Inter', system-ui, ...`, and loading JetBrains Mono sets `--vf-font-mono`:
+
+```js
+app.use(themePlugin);
+app.use(fontsPlugin, { families: ['Inter'] });
+// --vf-font-sans is now: 'Inter', system-ui, -apple-system, ...
+```
+
+### Accessing the service
+
+```js
+const fonts = app.get('fonts');          // FontsService instance
+fonts.getFamilies();                     // ['Inter', 'JetBrains Mono']
+```
+
+### Registering a custom font family
+
+```js
+app.get('fonts').addFamily('MyFont', {
+  cssFamily: 'MyFont',
+  variable: false,
+  weights: [400, 700],
+  styles: ['normal'],
+  filename: (weight) => `MyFont-${weight}.woff2`,
+  // dataUri: (style) => '...'  // optional; omit to use path-based URL
+});
+```
+
+`addFamily()` returns the service for chaining. Custom families without a bundled data URI
+are served from the `path` option passed at install time.
+
+---
+
+## Built-in theme plugin
+
+The theme plugin injects `--vf-*` CSS custom properties onto `:root` and provides a base
+stylesheet with utility classes.
+
+### Install
+
+```js
+import { createApp, themePlugin } from './src/framework.js';
+
+const app = createApp({ ... });
+app.use(themePlugin);
+// or override tokens:
+app.use(themePlugin, { tokens: { primary: '#0070f3' } });
+```
+
+### Design tokens (20 defaults)
+
+All tokens are injected as `--vf-<kebab-case>`. Token names in JS use camelCase:
+`textMuted` → `--vf-text-muted`, `radiusSm` → `--vf-radius-sm`.
+
+| Token | CSS variable | Default |
+|---|---|---|
+| `primary` | `--vf-primary` | `#3b82f6` |
+| `primaryDark` | `--vf-primary-dark` | `#2563eb` |
+| `secondary` | `--vf-secondary` | `#6b7280` |
+| `surface` | `--vf-surface` | `#ffffff` |
+| `background` | `--vf-background` | `#f4f5f7` |
+| `text` | `--vf-text` | `#1f2933` |
+| `textMuted` | `--vf-text-muted` | `#7b8794` |
+| `border` | `--vf-border` | `#e5e7eb` |
+| `danger` | `--vf-danger` | `#ef4444` |
+| `success` | `--vf-success` | `#10b981` |
+| `warning` | `--vf-warning` | `#f59e0b` |
+| `radius` | `--vf-radius` | `6px` |
+| `radiusSm` | `--vf-radius-sm` | `4px` |
+| `radiusLg` | `--vf-radius-lg` | `12px` |
+| `fontSans` | `--vf-font-sans` | `system-ui, -apple-system, ...` |
+| `fontMono` | `--vf-font-mono` | `"JetBrains Mono", "Fira Code", monospace` |
+| `shadowSm` | `--vf-shadow-sm` | `0 1px 3px rgba(0,0,0,.08)` |
+| `shadowMd` | `--vf-shadow-md` | `0 4px 16px rgba(0,0,0,.08)` |
+| `shadowLg` | `--vf-shadow-lg` | `0 10px 30px rgba(0,0,0,.12)` |
+| `space` | `--vf-space` | `4px` |
+
+### Service API
+
+```js
+const theme = app.get('theme');
+theme.setTokens({ primary: '#0070f3', radius: '4px' }); // live update
+theme.getToken('primary'); // '#0070f3'
+```
+
+### Base stylesheet classes
+
+| Class | Description |
+|---|---|
+| `.vf-card` | Bordered, shadowed card container |
+| `.vf-btn` | Base button |
+| `.vf-btn-primary` | Primary action button |
+| `.vf-btn-secondary` | Secondary action button |
+| `.vf-btn-danger` | Destructive action button |
+| `.vf-btn-success` | Positive action button |
+| `.vf-icon` | Inline icon sizing helper |
+
+Skip the base stylesheet with `app.use(themePlugin, { base: false })`.
+
+---
+
+## Built-in alerts plugin
+
+The alerts plugin provides auto-dismissing toasts and promise-based confirm dialogs.
+
+### Install
+
+```js
+import { createApp, alertsPlugin } from './src/framework.js';
+
+const app = createApp({ ... });
+app.use(alertsPlugin);
+```
+
+### Toasts
+
+```js
+const alerts = app.get('alerts');
+alerts.success('Saved');
+alerts.error('Something went wrong');
+alerts.warning('Low disk space');
+alerts.info('New version available');
+```
+
+Toasts auto-dismiss after a few seconds and slide in from the top-right. The oldest toast
+is silently removed when the `maxToasts` cap is reached (default: 5).
+
+### Confirm dialog
+
+```js
+const confirmed = await app.get('alerts').confirm('Delete this item?', {
+  danger: true,
+  confirmText: 'Delete',
+  cancelText: 'Keep',
+});
+
+if (confirmed) {
+  // user clicked Delete
+}
+```
+
+Callbacks are also supported:
+
+```js
+app.get('alerts').confirm('Are you sure?', {
+  onConfirm: () => doDelete(),
+  onCancel:  () => console.log('cancelled'),
+});
+```
+
+### Options for `confirm()`
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `title` | `string` | — | Optional heading above the message. |
+| `danger` | `boolean` | `false` | Styles the confirm button as destructive (red). |
+| `confirmText` | `string` | `'Confirm'` | Confirm button text. |
+| `cancelText` | `string` | `'Cancel'` | Cancel button text. |
+| `onConfirm` | `function` | — | Called when the user confirms (in addition to the Promise). |
+| `onCancel` | `function` | — | Called when the user cancels. |
+
+Injected styles use `--vf-*` tokens when `themePlugin` is installed; plain-CSS fallbacks are
+provided when it is absent.
+
+---
+
 ## Writing your own plugin
 
 A plugin is an object with a `name` and `install(app, options)` method:

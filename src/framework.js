@@ -39,6 +39,7 @@ export { optimizeImage, batchDOMOperations } from './utils/dom.js';
 export { iconsPlugin } from './plugins/icons/icons-plugin.js';
 export { themePlugin } from './plugins/theme/theme-plugin.js';
 export { alertsPlugin } from './plugins/alerts/alerts-plugin.js';
+export { fontsPlugin } from './plugins/fonts/fonts-plugin.js';
 
 // Import classes for internal use
 import { ComponentManager } from './core/component-manager.js';

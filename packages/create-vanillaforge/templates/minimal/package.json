@@ -1,0 +1,11 @@
+{
+  "name": "{{project-name}}",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "npx http-server . -p 3000 -c-1 --cors -o"
+  },
+  "dependencies": {
+    "vanillaforge": "github:Steve-GitCodex/vanillaforge"
+  }
+}

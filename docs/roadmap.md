@@ -9,6 +9,23 @@ Every item below plugs into the **plugin/service registry** added in v1.1. See
 
 ---
 
+## Done (v1.4)
+
+### Self-hosted fonts plugin
+- `fontsPlugin` — install with `app.use(fontsPlugin, { families: ['Inter', 'JetBrains Mono'] })`.
+- Inter and JetBrains Mono bundled as Latin-subset, variable-weight woff2 data URIs —
+  zero external requests, works out of the box.
+- Weight and style filtering: `{ name: 'Inter', weights: [400, 700], styles: ['normal'] }`.
+- `path` option to serve your own font files instead of the bundled data URIs.
+- Custom family registration via `FontsService.addFamily(name, manifest)`.
+- Theme token integration: loads Inter → updates `--vf-font-sans`; loads JetBrains Mono →
+  updates `--vf-font-mono` (no-op when themePlugin is absent).
+- `getFamilies()` — returns CSS family names of all loaded fonts.
+- Idempotent style element: reuses `<style id="vf-fonts">` rather than duplicating it.
+- Exported from `src/framework.js` as `fontsPlugin` + `FontsService`.
+
+---
+
 ## Done (v1.3)
 
 ### Alerts / notification plugin
@@ -63,43 +80,20 @@ Every item below plugs into the **plugin/service registry** added in v1.1. See
 
 ---
 
-## Next: batteries-included subsystems
+## Done (v1.5)
 
-### 1. Self-hosted fonts plugin
-
-**Why:** Replaces Google Fonts. Zero external requests, no privacy concerns, fonts load instantly
-from the same server.
-
-**Shape of the API:**
-```js
-import { fontsPlugin } from './src/plugins/fonts/fonts-plugin.js';
-
-app.use(fontsPlugin, {
-  families: ['Inter', 'JetBrains Mono'],
-  path: '/assets/fonts'  // where the font files live
-});
-```
-- Generates `@font-face` declarations and injects them into `<head>`.
-- Ships a small set of open-source font files in `src/plugins/fonts/files/`.
-
-**Where it plugs in:** `src/plugins/fonts/` — `fontsPlugin` + `FontsService`.
+### Scaffold CLI + TypeScript types
+- `npx create-vanillaforge my-app` — interactive or `--template=<name>` flag.
+- Four templates: `minimal` (no plugins), `full` (all plugins), `todo-app`, `router-app`.
+- Each scaffold uses a GitHub git dependency + importmap so no build step is needed in dev.
+- `types/index.d.ts` — full TypeScript declaration file for the entire public API; wired into
+  the package `"exports"` field so VS Code picks it up automatically.
+- Framework `package.json` updated: `"types": "types/index.d.ts"`, `"files"` includes `types/`.
+- See `docs/cli.md` for the full CLI reference.
 
 ---
 
-## Then: developer experience
-
-### 3. Fast onboarding / scaffold CLI
-
-**Why:** "Build apps quickly" means starting a new project in under a minute.
-
-- `npx create-vanillaforge my-app` — scaffolds a working project with the chosen plugins.
-- Starter templates: minimal (no plugins), full (icons + theme + alerts), todo-app clone,
-  router-app clone.
-- Optional TypeScript `.d.ts` declaration file for editor autocomplete without requiring TS.
-
-**Where it plugs in:** Separate `packages/create-vanillaforge/` CLI; types in `types/index.d.ts`.
-
----
+## Next: core engine upgrades
 
 ## Later: core engine upgrades
 

@@ -5,8 +5,12 @@
   "type": "module",
   "main": "src/framework.js",
   "module": "src/framework.js",
+  "types": "types/index.d.ts",
   "exports": {
-    ".": "./src/framework.js",
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/framework.js"
+    },
     "./components/base": "./src/components/base-component.js",
     "./package.json": "./package.json"
   },
@@ -58,6 +62,7 @@
   },
   "files": [
     "src/",
+    "types/",
     "scripts/",
     "examples/",
     "README.md",

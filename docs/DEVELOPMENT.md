@@ -201,6 +201,22 @@ src/
     icons/
       icons-plugin.js      <- IconsService + iconsPlugin (install with app.use())
       default-icons.js     <- ~20 built-in inline SVG icon paths
+    theme/
+      theme-plugin.js      <- ThemeService + themePlugin (--vf-* CSS tokens, base styles)
+    alerts/
+      alerts-plugin.js     <- AlertsService + alertsPlugin (toasts + confirm dialog)
+    fonts/
+      fonts-plugin.js      <- FontsService + fontsPlugin (self-hosted @font-face injection)
+      font-manifests.js    <- Inter and JetBrains Mono manifests
+      files/               <- bundled base64 woff2 data URIs (latin subset, variable weight)
+
+packages/
+  create-vanillaforge/     <- npx create-vanillaforge scaffold CLI
+    bin/create.js          <- CLI entry point (no external deps, Node 18+)
+    templates/             <- minimal | full | todo-app | router-app
+
+types/
+  index.d.ts               <- TypeScript declarations for the full public API
   utils/
     logger.js              <- contextual logger with child() factory
     error-handler.js       <- centralized error handling + user notifications
@@ -226,10 +242,9 @@ scripts/
 
 See `docs/roadmap.md` for a detailed, prioritized list of upcoming features. Short version:
 
-1. **CSS / theming plugin** — design tokens + utility styles, replacing Tailwind/Bootstrap
-2. **Alerts plugin** — fold the existing Notification + SweetAlert into the plugin pattern
-3. **Self-hosted fonts plugin** — replace Google Fonts
-4. **Fast onboarding** — scaffold CLI, starter templates, TypeScript types
-5. **Signals reactivity** — fine-grained updates (roadmap already flagged in dom-morph.js)
-6. **Data + shared state** — route loaders, global store
-7. **npm publish** — when the API is stable
+1. **Signals reactivity** — fine-grained updates (roadmap already flagged in dom-morph.js)
+2. **Data + shared state** — route loaders, global store
+3. **npm publish** — when the API is stable
+
+Already shipped: icons plugin (v1.1), CSS/theming plugin (v1.2), alerts plugin (v1.3),
+fonts plugin (v1.4), scaffold CLI + TypeScript types (v1.5).

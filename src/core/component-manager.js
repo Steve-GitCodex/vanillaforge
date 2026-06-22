@@ -44,7 +44,7 @@ export class ComponentManager {
       this.setupEventListeners();
       
       this.isInitialized = true;
-      this.logger.info('✅ Component manager initialized successfully');
+      this.logger.info('Component manager initialized successfully');
       
     } catch (error) {
       this.logger.error('Failed to initialize component manager', error);
@@ -123,6 +123,13 @@ export class ComponentManager {
 
       const instance = new ComponentClass(this.eventBus, props);
       instance.container = container;
+
+      // Give the instance a reference to the app (for plugin service access)
+      // and a resolver so child() calls can look up components by name.
+      if (this.app) {
+        instance.app = this.app;
+      }
+      instance._resolveComponent = (name) => this.components.get(name);
 
       // init() performs the single render (auto-render is on by default) and
       // binds delegated DOM listeners on the component's stable wrapper.

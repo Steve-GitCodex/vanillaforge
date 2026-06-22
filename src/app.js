@@ -40,9 +40,9 @@ async function initializeApp() {
     }
 
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      console.log('🔥 VanillaForge application started!');
-      console.log('📖 Framework instance available at window.app');
-      console.log('🔍 Debug tools available at window.VanillaForgeDebug');
+      console.log('VanillaForge application started!');
+      console.log('Framework instance available at window.app');
+      console.log('Debug tools available at window.VanillaForgeDebug');
     }
 
     window.app = app;
@@ -50,7 +50,7 @@ async function initializeApp() {
     console.error('Failed to initialize VanillaForge app:', error);
     document.getElementById('main-content').innerHTML = `
       <div style="padding: 40px; text-align: center; color: #dc3545;">
-        <h2>❌ Failed to Load</h2>
+        <h2>Failed to Load</h2>
         <p>Error: ${error.message}</p>
         <p style="margin-top: 20px;">
           <button onclick="location.reload()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">

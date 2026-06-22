@@ -55,6 +55,7 @@ export class CSSAutoDiscovery {
                 await fs.access(component.expectedCSSPath);
             } catch (error) {
                 missing.push(component);
+                console.warn(`Missing CSS for component: ${component.name} (expected at ${path.relative(projectRoot, component.expectedCSSPath)}): ${error.message}`);
             }
         }
 
@@ -64,7 +65,7 @@ export class CSSAutoDiscovery {
      */
     async generateCSSStubs(componentNames = null) {
         const missing = await this.findMissingCSS();
-        const components = componentNames 
+        const components = componentNames
             ? missing.filter(c => componentNames.includes(c.name))
             : missing;
 
@@ -75,13 +76,13 @@ export class CSSAutoDiscovery {
 
         for (const component of components) {
             const cssTemplate = this.generateCSSTemplate(component.name);
-            
+
             try {
                 await fs.writeFile(component.expectedCSSPath, cssTemplate);
                 generated.push(component.expectedCSSPath);
-                console.log(`✅ Generated CSS stub: ${path.relative(projectRoot, component.expectedCSSPath)}`);
+                console.log(`Generated CSS stub: ${path.relative(projectRoot, component.expectedCSSPath)}`);
             } catch (error) {
-                console.error(`❌ Failed to generate CSS for ${component.name}:`, error);
+                console.error(`Failed to generate CSS for ${component.name}:`, error);
             }
         }
 
@@ -93,7 +94,7 @@ export class CSSAutoDiscovery {
      */
     generateCSSTemplate(componentName) {
         const className = componentName.toLowerCase().replace(/component$/, '').replace(/[^a-z0-9]/g, '-');
-        
+
         return `/**
  * ${componentName} Styles
  * 
@@ -158,13 +159,14 @@ export class CSSAutoDiscovery {
 
         for (const component of components) {
             let hasCSS = false;
-            
+
             try {
                 await fs.access(component.expectedCSSPath);
                 hasCSS = true;
                 report.withCSS++;
             } catch (error) {
                 report.missingCSS++;
+                console.warn(`Missing CSS for component: ${component.name} (expected at ${path.relative(projectRoot, component.expectedCSSPath)}): ${error.message}`);
             }
 
             report.components.push({
@@ -181,31 +183,31 @@ export class CSSAutoDiscovery {
      * Auto-discovery CLI interface
      */
     async runAutoDiscovery(options = {}) {
-        console.log('🔍 Running CSS Auto-Discovery...\n');
+        console.log('Running CSS Auto-Discovery...\n');
 
         // Validate structure
         const report = await this.validateCSSStructure();
-        
-        console.log('📊 CSS Structure Report:');
+
+        console.log('CSS Structure Report:');
         console.log(`  Total components: ${report.total}`);
         console.log(`  Components with CSS: ${report.withCSS}`);
         console.log(`  Components missing CSS: ${report.missingCSS}\n`);
 
         if (report.missingCSS > 0) {
-            console.log('📄 Missing CSS files:');
+            console.log('Missing CSS files:');
             report.components
                 .filter(c => !c.hasCSS)
-                .forEach(c => console.log(`  ❌ ${c.name}`));
-            
+                .forEach(c => console.log(`  ${c.name}`));
+
             if (options.generateStubs) {
-                console.log('\n🏗️  Generating CSS stubs...');
+                console.log('\n  Generating CSS stubs...');
                 await this.generateCSSStubs();
-                console.log('✅ CSS stub generation complete!\n');
+                console.log('CSS stub generation complete!\n');
             } else {
-                console.log('\n💡 Run with --generate to create CSS stub files\n');
+                console.log('\n Run with --generate to create CSS stub files\n');
             }
         } else {
-            console.log('✅ All components have CSS files!\n');
+            console.log('All components have CSS files!\n');
         }
 
         return report;
@@ -216,7 +218,7 @@ export class CSSAutoDiscovery {
 if (import.meta.url === `file://${process.argv[1]}`) {
     const cssDiscovery = new CSSAutoDiscovery();
     const generateStubs = process.argv.includes('--generate');
-    
+
     cssDiscovery.runAutoDiscovery({ generateStubs })
         .then(report => {
             process.exit(report.missingCSS > 0 && !generateStubs ? 1 : 0);

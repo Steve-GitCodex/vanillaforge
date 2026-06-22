@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Routing Example - VanillaForge</title>
+    <title>Routing + Composition - VanillaForge</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -24,34 +24,104 @@
             box-shadow: 0 10px 30px rgba(0,0,0,.06);
         }
         h1 { margin-bottom: 8px; }
-        .muted { color: #7b8794; }
-        .role { color: #3b82f6; font-weight: 600; margin-bottom: 12px; }
-        .list { list-style: none; margin-top: 16px; }
-        .list li { border-top: 1px solid #eef1f4; }
-        .list li:first-child { border-top: none; }
-        .list a {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 14px 4px; text-decoration: none; color: inherit;
+        .muted {
+            color: #7b8794;
+            display: flex; align-items: center; gap: 4px;
+            margin-top: 4px; font-size: .9rem;
         }
-        .list a:hover { color: #3b82f6; }
+        .muted .vf-icon { opacity: .7; }
+        .role { color: #3b82f6; font-weight: 600; margin-bottom: 12px; }
+
+        /* User list */
+        .user-list {
+            list-style: none; margin-top: 16px;
+        }
+
+        /* User card (child component) */
+        .component.user-card {
+            display: block;
+        }
+        .user-card {
+            border-top: 1px solid #eef1f4;
+        }
+        .user-card:first-child {
+            border-top: none;
+        }
+        .user-card-row {
+            display: flex; align-items: center;
+            justify-content: space-between;
+            padding: 14px 4px;
+        }
+        .user-card-link {
+            display: flex; align-items: center; gap: 12px;
+            text-decoration: none; color: inherit; flex: 1;
+        }
+        .user-card-link:hover .user-card-name { color: #3b82f6; }
+        .user-card-avatar {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: #3b82f6;
+            color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: .95rem;
+            flex-shrink: 0;
+        }
+        .user-card-name { display: block; font-weight: 600; }
+        .user-card-role { font-size: .82rem; color: #7b8794; }
+        .user-card-toggle {
+            background: none; border: none; cursor: pointer;
+            color: #7b8794; padding: 4px; border-radius: 4px;
+            display: flex; align-items: center;
+        }
+        .user-card-toggle:hover { background: #f0f4f8; color: #1f2933; }
+        .user-card-bio {
+            padding: 0 4px 14px 4px;
+            color: #374151; font-size: .92rem; line-height: 1.55;
+        }
+        .user-card-bio p { margin-bottom: 10px; }
+        .user-card-detail-link {
+            display: inline-flex; align-items: center; gap: 4px;
+            color: #3b82f6; text-decoration: none; font-weight: 600; font-size: .88rem;
+        }
+        .user-card-detail-link:hover { text-decoration: underline; }
+
+        /* Detail view */
+        .detail-header {
+            display: flex; align-items: center; gap: 16px;
+            margin: 16px 0;
+        }
+        .detail-avatar {
+            width: 56px; height: 56px;
+            border-radius: 50%;
+            background: #3b82f6;
+            color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+
         .btn {
-            display: inline-block; margin-bottom: 16px;
+            display: inline-flex; align-items: center; gap: 6px;
+            margin-bottom: 16px;
             color: #3b82f6; text-decoration: none; font-weight: 600;
         }
         .btn:hover { text-decoration: underline; }
+
+        /* VanillaForge icon base */
+        .vf-icon { vertical-align: middle; }
     </style>
 </head>
 <body>
     <div class="shell">
         <div class="topbar">
-            <h2>🔥 VanillaForge</h2>
-            <span class="muted">· client-side routing with params</span>
+            <h2>VanillaForge</h2>
+            <span class="muted">· composition + routing + icons</span>
         </div>
         <div id="main-content"></div>
     </div>
 
     <script type="module">
-        import { createApp } from '../../src/framework.js';
+        import { createApp, iconsPlugin } from '../../src/framework.js';
         import { UsersList } from './components/users-list.js';
         import { UserDetail } from './components/user-detail.js';
 
@@ -66,6 +136,9 @@
             router: { basePath },
             debug: true,
         });
+
+        // Install the built-in icons plugin (no Font Awesome needed).
+        app.use(iconsPlugin);
 
         await app.initialize({
             routes: {

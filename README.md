@@ -15,7 +15,13 @@ optimized bundle.
 
 - **Zero runtime dependencies** — ships as plain ES modules.
 - **Small** — the core is ~14.5 KB min+gzip (~48 KB minified).
-- **Component-based** — class components with lifecycle hooks and local state.
+- **Batteries-included (growing)** — built-in icons out of the box; CSS/theming
+  and alert systems are next. No Font Awesome, Bootstrap, or SweetAlert required
+  — but you can still bring them in if you want.
+- **Component composition** — embed child components directly inside parent
+  templates. Each child has isolated state, props, lifecycle, and event handling.
+- **Plugin system** — every subsystem (icons, theme, alerts) is a plugin you can
+  install, replace, or skip.
 - **Efficient updates** — re-renders are applied with a tiny DOM-morphing diff,
   so only changed nodes are touched and focused inputs keep their cursor (see
   [How rendering works](#how-rendering-works)).
@@ -42,7 +48,7 @@ npm run example:router   # Routing + params demo
 **Your first component:**
 
 ```javascript
-import { createApp, BaseComponent } from './src/framework.js';
+import { createApp, BaseComponent, iconsPlugin } from './src/framework.js';
 
 class HelloWorld extends BaseComponent {
     constructor(eventBus, props = {}) {
@@ -54,9 +60,11 @@ class HelloWorld extends BaseComponent {
     getTemplate() {
         return `
             <div class="hello">
-                <h1>Hello, VanillaForge! 🔥</h1>
+                <h1>Hello, VanillaForge!</h1>
                 <p>Clicked ${this.state.count} times.</p>
-                <button data-action="inc">Click me</button>
+                <button data-action="inc">
+                    ${this.icon('plus', { size: 16 })} Click me
+                </button>
             </div>
         `;
     }
@@ -67,6 +75,7 @@ class HelloWorld extends BaseComponent {
 }
 
 const app = createApp({ debug: true });
+app.use(iconsPlugin);                                   // built-in SVG icons
 await app.initialize({ routes: { '/': HelloWorld } });
 await app.start();
 ```
@@ -150,11 +159,16 @@ and copies/minifies discovered CSS. See [docs/build-system.md](docs/build-system
 ## Documentation
 
 - [Components Guide](docs/components.md)
+- [Component Composition](docs/composition.md)
+- [Plugin System & Built-in Icons](docs/plugins.md)
 - [Routing System](docs/router.md)
 - [Event Bus](docs/event-bus.md)
 - [API Reference](docs/API.md)
 - [Build System](docs/build-system.md)
 - [GitHub Pages](docs/github-pages.md)
+- [Roadmap](docs/roadmap.md)
+
+For maintainers returning after time away: see [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## Browser Support
 
@@ -162,11 +176,16 @@ Modern browsers with ES2020+ support: Chrome 80+, Firefox 72+, Safari 14+, Edge 
 
 ## Roadmap
 
-- **Fine-grained reactivity (signals)** — update only the exact bound nodes
-  without re-running the whole template. Today's morph-based rendering is the
-  stepping stone.
-- TypeScript type definitions.
-- A published npm package.
+- **CSS / theming plugin** — design tokens + base styles; no Bootstrap or Tailwind needed.
+- **Alerts plugin** — fold the existing toast/modal system into the plugin pattern.
+- **Self-hosted fonts** — replace Google Fonts with a first-party fonts plugin.
+- **Fast onboarding** — scaffold CLI, starter templates, TypeScript types.
+- **Fine-grained reactivity (signals)** — update only exact bound nodes without
+  re-running the whole template.
+- **Data loading + shared store** — route loaders and a global state service.
+- **npm package** — when the public API is stable.
+
+Full details in [docs/roadmap.md](docs/roadmap.md).
 
 ## Contributing
 

@@ -1,0 +1,173 @@
+# VanillaForge — Roadmap
+
+This is the living plan for VanillaForge's evolution toward a batteries-included framework where
+developers don't need Font Awesome, Tailwind, Bootstrap, Google Fonts, or SweetAlert — while
+remaining free to bring those libraries in if they want to.
+
+Every item below plugs into the **plugin/service registry** added in v1.1. See
+`DEVELOPMENT.md` for how to write a plugin.
+
+---
+
+## Done (v1.1)
+
+### Plugin / service-registry foundation
+- `app.use(plugin, options)` — install a plugin; idempotent, chainable.
+- `app.provide(name, instance)` — register or override a named service.
+- `app.get(name)` — retrieve a service (reads registry first, falls back to component names).
+- `componentManager.app` + `instance.app` — every component can call `this.service(name)`.
+- `this.icon(name, opts)` — shortcut to the icons service.
+
+### Component composition
+- `this.child(ClassOrName, props, key)` — embed child components in templates.
+- `reconcileChildren()` — mounts new children, updates props, destroys removed ones.
+- Morph treats `[data-vf-host]` as an opaque boundary (child DOM survives parent re-renders).
+- Event delegation scoped so child events don't fire the parent's handler.
+- Full child teardown when parent is destroyed (no listener leaks).
+
+### Built-in icons (first plugin)
+- ~20 original inline SVG icons: check, close, trash, plus, minus, menu, chevrons, search, info,
+  warning, edit, arrows, home, user, settings, external-link.
+- `iconsPlugin` — install with `app.use(iconsPlugin)`.
+- Custom icons via `app.use(iconsPlugin, { icons: { logo: '<path .../>' } })` or
+  `app.get('icons').register('name', svg)`.
+- Replaces Font Awesome for common UI icons; users can still bring their own icon lib.
+
+---
+
+## Next: batteries-included subsystems
+
+### 1. CSS / theming plugin
+
+**Why:** Eliminates the need for Tailwind or Bootstrap for basic styling. Apps should look good
+out of the box with sensible defaults but be fully themeable.
+
+**Shape of the API:**
+```js
+import { themePlugin } from './src/plugins/theme/theme-plugin.js';
+
+app.use(themePlugin, {
+  tokens: { primary: '#3b82f6', radius: '6px', fontSans: 'system-ui' }
+});
+```
+- Injects a `<style>` block of CSS custom properties (`--vf-primary`, `--vf-radius`, …).
+- Ships a small base stylesheet (reset, sensible form styles, flexbox helpers) as a built-in
+  that components can opt into.
+- Builds on the existing CSS auto-discovery in `scripts/css-discovery.js`.
+
+**Where it plugs in:** `src/plugins/theme/` — `themePlugin` + `ThemeService`.
+
+---
+
+### 2. Alerts / notification plugin
+
+**Why:** Replaces SweetAlert and the current hard-coded `Notification` class. Users get great
+toasts and modals without installing a third-party library.
+
+**Shape of the API:**
+```js
+this.service('alerts').success('Saved!');
+this.service('alerts').confirm('Delete?', { onConfirm: () => this.deleteItem() });
+```
+- Fold the existing `src/utils/notification.js` and `src/utils/sweet-alert.js` into
+  `src/plugins/alerts/alerts-plugin.js`.
+- Register under `'alerts'` so `this.service('alerts')` works in any component.
+- Keep `ErrorHandler` wired to this service for automatic error toasts.
+
+**Where it plugs in:** `src/plugins/alerts/` — `alertsPlugin` + `AlertsService`.
+
+---
+
+### 3. Self-hosted fonts plugin
+
+**Why:** Replaces Google Fonts. Zero external requests, no privacy concerns, fonts load instantly
+from the same server.
+
+**Shape of the API:**
+```js
+import { fontsPlugin } from './src/plugins/fonts/fonts-plugin.js';
+
+app.use(fontsPlugin, {
+  families: ['Inter', 'JetBrains Mono'],
+  path: '/assets/fonts'  // where the font files live
+});
+```
+- Generates `@font-face` declarations and injects them into `<head>`.
+- Ships a small set of open-source font files in `src/plugins/fonts/files/`.
+
+**Where it plugs in:** `src/plugins/fonts/` — `fontsPlugin` + `FontsService`.
+
+---
+
+## Then: developer experience
+
+### 4. Fast onboarding / scaffold CLI
+
+**Why:** "Build apps quickly" means starting a new project in under a minute.
+
+- `npx create-vanillaforge my-app` — scaffolds a working project with the chosen plugins.
+- Starter templates: minimal (no plugins), full (icons + theme + alerts), todo-app clone,
+  router-app clone.
+- Optional TypeScript `.d.ts` declaration file for editor autocomplete without requiring TS.
+
+**Where it plugs in:** Separate `packages/create-vanillaforge/` CLI; types in `types/index.d.ts`.
+
+---
+
+## Later: core engine upgrades
+
+### 5. Signals / fine-grained reactivity
+
+**Why:** Currently `setState()` re-renders the whole component template then morphs. For complex
+components this is wasteful. Signals would let only the parts of the DOM that depend on a changed
+value update directly.
+
+**Shape of the API:**
+```js
+const count = this.signal(0);
+// In template: ${count.value}
+// In method:   count.set(count.value + 1) // -> only the text node updates
+```
+
+**Where it plugs in:** The morph is already the single render chokepoint. Signals slot in by
+bypassing the template-string step and writing patches directly to the DOM. `src/core/dom-morph.js`
+already notes this in its header comment.
+
+---
+
+### 6. Data loading + shared state
+
+**Why:** Real apps need async data (route loaders) and state shared across components (a store).
+
+**Route loaders:**
+```js
+addRoute('/users', {
+  component: UsersListComponent,
+  loader: async ({ params }) => fetch('/api/users').then(r => r.json()),
+  // props.data is available in the component on first render
+})
+```
+
+**Global store:**
+```js
+const store = this.service('store');
+store.set('cart', [...items]);
+store.get('cart');
+store.subscribe('cart', (items) => this.setState({ items }));
+```
+- Layered on top of the existing EventBus (EventBus already does pub/sub; store just adds
+  persistent state and a subscription shortcut).
+
+**Where it plugs in:** `src/plugins/store/` + loader support wired into `src/core/router.js`.
+
+---
+
+## Finally: packaging
+
+### 7. npm publish
+
+When the public API is stable (after plugins + composition are battle-tested):
+- Add `"exports"` field to `package.json`.
+- Add `types/index.d.ts`.
+- Semantic versioning: `2.0.0` for the stable public release.
+- Publish `vanillaforge` (or `@vanillaforge/core`) to npm.

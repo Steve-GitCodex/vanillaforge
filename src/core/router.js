@@ -66,7 +66,7 @@ export class Router {
       await this.handleInitialRoute();
       
       this.isInitialized = true;
-      this.logger.info('✅ Router initialized successfully');
+      this.logger.info('Router initialized successfully');
       
     } catch (error) {
       this.logger.error('Failed to initialize router', error);

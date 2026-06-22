@@ -50,7 +50,7 @@ async function discoverCssFiles() {
  * Process and copy CSS files with optimization
  */
 async function processCss() {
-  console.log('📄 Processing CSS files...');
+  console.log('Processing CSS files...');
   
   const cssFiles = await discoverCssFiles();
   const processedFiles = [];
@@ -79,13 +79,13 @@ async function processCss() {
       await fs.writeFile(cssFile.distPath, cssContent);
       processedFiles.push(cssFile);
       
-      console.log(`  ✅ ${cssFile.relativePath}`);
+      console.log(`  ${cssFile.relativePath}`);
     } catch (error) {
-      console.error(`  ❌ Failed to process ${cssFile.relativePath}:`, error.message);
+      console.error(`  Failed to process ${cssFile.relativePath}:`, error.message);
     }
   }
   
-  console.log(`📄 Processed ${processedFiles.length} CSS files`);
+  console.log(`Processed ${processedFiles.length} CSS files`);
   return processedFiles;
 }
 
@@ -93,7 +93,7 @@ async function processCss() {
  * Process HTML file with auto-injected CSS links
  */
 async function processHtml(cssFiles) {
-  console.log('🌐 Processing HTML...');
+  console.log('Processing HTML...');
   
   const indexPath = path.join(projectRoot, 'index.html');
   let html = await fs.readFile(indexPath, 'utf-8');
@@ -127,14 +127,14 @@ async function processHtml(cssFiles) {
   }
 
   await fs.writeFile(path.join(buildConfig.distDir, 'index.html'), html);
-  console.log('🌐 HTML processed successfully');
+  console.log('HTML processed successfully');
 }
 
 /**
  * Copy additional assets
  */
 async function copyAssets() {
-  console.log('📦 Copying additional assets...');
+  console.log('Copying additional assets...');
   
   // Copy any other assets (images, fonts, etc.)
   const assetPatterns = [
@@ -154,17 +154,17 @@ async function copyAssets() {
     }
   }
   
-  console.log('📦 Assets copied successfully');
+  console.log('Assets copied successfully');
 }
 
 /**
  * Main build function
  */
 async function build() {
-  console.log('🚀 Starting VanillaForge build...');
-  console.log(`📁 Source: ${buildConfig.srcDir}`);
-  console.log(`📁 Output: ${buildConfig.distDir}`);
-  console.log(`⚙️  Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log('Starting VanillaForge build...');
+  console.log(`Source: ${buildConfig.srcDir}`);
+  console.log(`Output: ${buildConfig.distDir}`);
+  console.log(`  Environment: ${process.env.NODE_ENV || 'development'}`);
   
   // Clean and create dist directory
   await fs.rm(buildConfig.distDir, { recursive: true, force: true });
@@ -172,7 +172,7 @@ async function build() {
 
   try {
     // Build JavaScript bundle
-    console.log('📦 Building JavaScript bundle...');
+    console.log('Building JavaScript bundle...');
     await esbuild.build({
       entryPoints: [buildConfig.entryPoint],
       bundle: true,
@@ -183,7 +183,7 @@ async function build() {
       target: 'es2020',
       treeShaking: true,
     });
-    console.log('📦 JavaScript bundle created successfully');
+    console.log('JavaScript bundle created successfully');
 
     // Process CSS files
     const cssFiles = await processCss();
@@ -195,15 +195,15 @@ async function build() {
     await copyAssets();
     
     // Build summary
-    console.log('\n✅ Build completed successfully!');
-    console.log('📊 Build Summary:');
-    console.log(`  📦 JavaScript: app.bundle.js`);
-    console.log(`  📄 CSS files: ${cssFiles.length}`);
-    console.log(`  🌐 HTML: index.html`);
-    console.log(`  📁 Output directory: ${buildConfig.distDir}`);
+    console.log('\nBuild completed successfully!');
+    console.log('Build Summary:');
+    console.log(`  JavaScript: app.bundle.js`);
+    console.log(`  CSS files: ${cssFiles.length}`);
+    console.log(`  HTML: index.html`);
+    console.log(`  Output directory: ${buildConfig.distDir}`);
     
   } catch (error) {
-    console.error('❌ Build failed:', error);
+    console.error('Build failed:', error);
     process.exit(1);
   }
 }

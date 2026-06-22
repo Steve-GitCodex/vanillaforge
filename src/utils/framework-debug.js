@@ -36,11 +36,11 @@ export class FrameworkDebug {
       // Add debug tools to window for console access
     window.VanillaForgeDebug = this;
     
-    this.logger.info('🔍 Framework debug mode enabled');
+    this.logger.info('Framework debug mode enabled');
     
     // Only show console message in development
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      console.log('🔍 VanillaForge Debug mode enabled. Access via window.VanillaForgeDebug');
+      console.log('VanillaForge Debug mode enabled. Access via window.VanillaForgeDebug');
     }
   }
 
@@ -196,7 +196,7 @@ export class FrameworkDebug {
       performance: this.getPerformanceInfo()
     };
     
-    console.group('🔍 VanillaForge Framework State');
+    console.group('VanillaForge Framework State');
     console.table(stats);
     console.groupEnd();
     
@@ -253,7 +253,7 @@ export class FrameworkDebug {
     results.duration = endTime - startTime;
     results.averageTime = results.duration / iterations;
 
-    console.log('🧪 Stress test results:', results);
+    console.log('Stress test results:', results);
     return results;
   }
 
@@ -292,7 +292,7 @@ export class FrameworkDebug {
       eventsPerSecond: eventCount / ((endTime - startTime) / 1000)
     };
 
-    console.log('📡 Event bus performance results:', results);
+    console.log('Event bus performance results:', results);
     return results;
   }
 
@@ -362,7 +362,7 @@ export class FrameworkDebug {
 
     // Only log to console in development mode
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      console.log('🏥 Framework Health Check:', health);
+      console.log('Framework Health Check:', health);
     }
     
     return health;

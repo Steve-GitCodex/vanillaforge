@@ -70,6 +70,20 @@ export class BaseComponent {
         this._delegationBound = false;
         this._delegatedListeners = [];
 
+        // Composition: children and per-render spec buffer.
+        // _children: Map<resolvedKey, BaseComponent instance>
+        // _childSpecs: Array filled by child() calls during getTemplate()
+        this._children = new Map();
+        this._childSpecs = [];
+        this._childIndex = 0;
+
+        // Set by the framework (ComponentManager / parent component) so child()
+        // calls can look up sibling components by registered name.
+        this._resolveComponent = null;
+
+        // Set by ComponentManager so components can reach plugin services.
+        this.app = null;
+
         // Bind methods to maintain context
         this.handleError = this.handleError.bind(this);
         this.cleanup = this.cleanup.bind(this);
@@ -140,6 +154,11 @@ export class BaseComponent {
         try {
             this.logger.debug('Rendering component');
 
+            // Reset per-render child spec buffer before calling getTemplate(),
+            // which will refill it via this.child() calls.
+            this._childSpecs = [];
+            this._childIndex = 0;
+
             // Generate component HTML
             let html;
             if (typeof this.getHTML === 'function') {
@@ -163,6 +182,9 @@ export class BaseComponent {
                 // Subsequent renders: patch only what changed.
                 morph(this.element, html);
             }
+
+            // Mount, update, or unmount child components declared via child().
+            await this.reconcileChildren();
 
             // Post-render setup
             await this.onRender();
@@ -519,6 +541,143 @@ export class BaseComponent {
     }
 
     // ===========================
+    // Composition API
+    // ===========================
+
+    /**
+     * Declare a child component inside a getTemplate() call.
+     *
+     * Returns a placeholder string that the DOM morph treats as an opaque host
+     * boundary. After the morph, reconcileChildren() mounts / updates / removes
+     * real child instances to match what the template declared.
+     *
+     * @param {Function|string} componentClassOrName - Component class or registered name
+     * @param {Object} [props={}] - Props to pass to the child
+     * @param {string|number|null} [key=null] - Stable key for keyed reconciliation
+     * @returns {string} Host placeholder HTML string
+     *
+     * @example
+     * getTemplate() {
+     *   return `
+     *     <ul>
+     *       ${this.state.items.map(item =>
+     *         this.child(ItemRow, { item }, item.id)
+     *       ).join('')}
+     *     </ul>`;
+     * }
+     */
+    child(componentClassOrName, props = {}, key = null) {
+        let ComponentClass = componentClassOrName;
+
+        if (typeof componentClassOrName === 'string') {
+            ComponentClass = this._resolveComponent
+                ? this._resolveComponent(componentClassOrName)
+                : null;
+            if (!ComponentClass) {
+                this.logger.warn(`child(): component not registered: "${componentClassOrName}"`);
+                return '';
+            }
+        }
+
+        const index = this._childIndex++;
+        const resolvedKey = key != null ? String(key) : `__vf_${index}`;
+
+        this._childSpecs.push({ ComponentClass, props, key: resolvedKey });
+
+        return `<div data-vf-host="${index}" data-key="${resolvedKey}"></div>`;
+    }
+
+    /**
+     * Mount, update, or unmount child components after a render.
+     * Called automatically by render() — do not call this manually.
+     * @private
+     */
+    async reconcileChildren() {
+        if (this._childSpecs.length === 0 && this._children.size === 0) return;
+
+        const hostEls = Array.from(this.element.querySelectorAll('[data-vf-host]'));
+        const usedKeys = new Set();
+
+        for (let i = 0; i < this._childSpecs.length; i++) {
+            const spec = this._childSpecs[i];
+            const hostEl = hostEls[i];
+            if (!hostEl) continue;
+
+            usedKeys.add(spec.key);
+
+            if (this._children.has(spec.key)) {
+                // Existing child: update props (re-renders only if they changed).
+                const child = this._children.get(spec.key);
+                // Re-attach the wrapper to the host in case morph moved the host.
+                if (child.element && child.element.parentElement !== hostEl) {
+                    hostEl.innerHTML = '';
+                    hostEl.appendChild(child.element);
+                }
+                await child.updateProps(spec.props);
+            } else {
+                // New child: instantiate, wire, and mount.
+                const child = new spec.ComponentClass(this.eventBus, spec.props);
+                child.container = hostEl;
+                // Propagate app reference and component resolver down the tree.
+                child.app = this.app;
+                child._resolveComponent = this._resolveComponent;
+                await child.init();
+                if (typeof child.getLifecycle === 'function') {
+                    const lc = child.getLifecycle();
+                    if (lc && typeof lc.onMount === 'function') await lc.onMount.call(child);
+                }
+                this._children.set(spec.key, child);
+            }
+        }
+
+        // Destroy children whose host was removed from the template.
+        for (const [key, child] of this._children) {
+            if (!usedKeys.has(key)) {
+                try {
+                    if (typeof child.getLifecycle === 'function') {
+                        const lc = child.getLifecycle();
+                        if (lc && typeof lc.onUnmount === 'function') await lc.onUnmount.call(child);
+                    }
+                    child.destroy();
+                } catch (err) {
+                    this.logger.warn('Error destroying removed child', { key, err });
+                }
+                this._children.delete(key);
+            }
+        }
+    }
+
+    // ===========================
+    // Plugin service access
+    // ===========================
+
+    /**
+     * Look up a plugin service registered with app.provide().
+     * Returns null when the app reference is not set or the service is absent
+     * (so templates can safely fall back: `this.service('icons')?.render(...) ?? ''`).
+     *
+     * @param {string} name - Service name (e.g. 'icons', 'theme', 'alerts')
+     * @returns {*|null} Service instance or null
+     */
+    service(name) {
+        return this.app ? this.app.get(name) : null;
+    }
+
+    /**
+     * Render an inline SVG icon from the built-in icons service.
+     * Returns an empty string if the icons plugin is not installed, so templates
+     * degrade gracefully without needing null checks everywhere.
+     *
+     * @param {string} name - Icon name (e.g. 'check', 'trash', 'menu')
+     * @param {Object} [opts={}] - Options forwarded to IconsService.render()
+     * @returns {string} Inline SVG string, or '' if icons service is unavailable
+     */
+    icon(name, opts = {}) {
+        const icons = this.service('icons');
+        return icons ? icons.render(name, opts) : '';
+    }
+
+    // ===========================
     // Lifecycle Hooks (Override in subclasses)
     // ===========================
 
@@ -631,6 +790,11 @@ export class BaseComponent {
         const target = event.target.closest(`[${attr}]`);
         if (!target || !this.element.contains(target)) return;
 
+        // If the event originated inside a child component's host element, that
+        // child's own delegation listener handles it. Don't double-dispatch.
+        const host = event.target.closest('[data-vf-host]');
+        if (host && this.element.contains(host)) return;
+
         const action = target.getAttribute(attr);
         const methods = (typeof this.getMethods === 'function') ? this.getMethods() : {};
 
@@ -664,6 +828,21 @@ export class BaseComponent {
      * @private
      */
     cleanup() {
+        // Tear down child components first so their listeners and subtrees are
+        // destroyed before we remove our own wrapper from the DOM.
+        for (const child of this._children.values()) {
+            try {
+                if (typeof child.getLifecycle === 'function') {
+                    const lc = child.getLifecycle();
+                    if (lc && typeof lc.onUnmount === 'function') lc.onUnmount.call(child);
+                }
+                child.destroy();
+            } catch (err) {
+                this.logger.warn('Error destroying child component during cleanup', { err });
+            }
+        }
+        this._children.clear();
+
         // Clean up DOM event listeners
         for (const [key, listener] of this.eventListeners) {
             try {

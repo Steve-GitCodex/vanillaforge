@@ -133,6 +133,12 @@ function morphNode(oldNode, newNode) {
 
   morphAttributes(oldNode, newNode);
 
+  // Child-component host elements are opaque boundaries: the mounted child owns
+  // its inner DOM. We update the host's own attributes (including data-key so
+  // identity is tracked) but never recurse into its children. The composition
+  // system in BaseComponent.reconcileChildren() takes care of updates.
+  if (oldNode.hasAttribute('data-vf-host')) return;
+
   if (FORM_TAGS.has(oldNode.tagName)) {
     syncFormState(oldNode, newNode);
   }

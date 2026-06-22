@@ -22,6 +22,9 @@ build/
 *.swo
 *~
 
+# Claude Code local settings (personal permission allowlists, etc.)
+.claude/
+
 # OS files
 .DS_Store
 .DS_Store?
@@ -49,8 +52,6 @@ tmp/
 temp/
 
 # Private development files (DO NOT COMMIT)
-ROADMAP_PRIVATE.md
 *_PRIVATE.*
 *.private.*
 notes/
-personal-notes/

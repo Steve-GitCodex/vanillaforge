@@ -9,6 +9,19 @@ Every item below plugs into the **plugin/service registry** added in v1.1. See
 
 ---
 
+## Done (v1.3)
+
+### Alerts / notification plugin
+- `alertsPlugin` — install with `app.use(alertsPlugin)`.
+- `success()`, `error()`, `warning()`, `info()` — auto-dismissing slide-in toasts.
+- `confirm(message, opts)` — modal dialog returning `Promise<boolean>`; optional
+  `onConfirm`/`onCancel` callbacks, `danger` variant, custom button labels.
+- Injected styles use `--vf-*` tokens; plain-CSS fallbacks when themePlugin absent.
+- Backward-compat `showToast`/`showModal` interface wires into `ErrorHandler`.
+- `maxToasts` cap — oldest toast silently removed when exceeded.
+
+---
+
 ## Done (v1.2)
 
 ### CSS / theming plugin
@@ -52,26 +65,7 @@ Every item below plugs into the **plugin/service registry** added in v1.1. See
 
 ## Next: batteries-included subsystems
 
-### 1. Alerts / notification plugin
-
-**Why:** Replaces SweetAlert and the current hard-coded `Notification` class. Users get great
-toasts and modals without installing a third-party library.
-
-**Shape of the API:**
-```js
-this.service('alerts').success('Saved!');
-this.service('alerts').confirm('Delete?', { onConfirm: () => this.deleteItem() });
-```
-- Fold the existing `src/utils/notification.js` and `src/utils/sweet-alert.js` into
-  `src/plugins/alerts/alerts-plugin.js`.
-- Register under `'alerts'` so `this.service('alerts')` works in any component.
-- Keep `ErrorHandler` wired to this service for automatic error toasts.
-
-**Where it plugs in:** `src/plugins/alerts/` — `alertsPlugin` + `AlertsService`.
-
----
-
-### 2. Self-hosted fonts plugin
+### 1. Self-hosted fonts plugin
 
 **Why:** Replaces Google Fonts. Zero external requests, no privacy concerns, fonts load instantly
 from the same server.

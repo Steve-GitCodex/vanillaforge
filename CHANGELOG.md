@@ -7,6 +7,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-06-22
+
+This release adds the **alerts plugin** — zero-dependency toasts and confirm dialogs.
+Apps no longer need SweetAlert, `window.confirm`, or any other notification library.
+The plugin also replaces the old `Notification` class so the ErrorHandler automatically
+uses the new styled UI.
+
+### Added
+
+#### Alerts plugin (`src/plugins/alerts/`)
+- `alertsPlugin` — install with `app.use(alertsPlugin)` or with options.
+- `AlertsService` methods:
+  - `success(message)`, `error(message)`, `warning(message)`, `info(message)` —
+    show a slide-in toast that auto-dismisses after `duration` ms (default 4000).
+  - `confirm(message, opts)` — show a modal dialog; returns a `Promise<boolean>`
+    (true = confirmed, false = cancelled / backdrop click). Simultaneously calls
+    `opts.onConfirm` / `opts.onCancel` callbacks if provided.
+- Toast options: `duration` (per-call override), type classes (`vf-toast-success`,
+  `vf-toast-error`, `vf-toast-warning`, `vf-toast-info`), built-in close button.
+- Confirm options: `title` (optional heading), `confirmText`, `cancelText`,
+  `danger` (red confirm button), `onConfirm`, `onCancel`.
+- `maxToasts` cap (default 5) — oldest toast is silently removed when exceeded.
+- Injected styles (`<style id="vf-alerts-styles">`) use `--vf-*` custom properties
+  if the theme plugin is installed, with plain-CSS fallbacks if not.
+- Backward-compatible `showToast(message, type)` and `showModal(title, message, opts)`
+  methods so the existing `ErrorHandler` works without changes.
+- On install, `app.errorHandler.notification` is re-pointed to the new service,
+  so framework errors automatically use the styled toasts and dialogs.
+- `alertsPlugin` exported from `src/framework.js` as part of the public API.
+- `FRAMEWORK_VERSION` bumped to `1.3.0`.
+
+#### Tests
+- `tests/alerts.test.js` — 22 tests covering: container creation, style injection,
+  de-duplication, all four toast type classes, message rendering, auto-dismiss with
+  fake timers, close button, maxToasts trimming, `showToast()` backward compat,
+  `confirm()` Promise resolution (confirm / cancel / backdrop), `onConfirm` /
+  `onCancel` callbacks, DOM cleanup after close, title and danger-button options,
+  `showModal()` backward compat and close button, and full plugin integration
+  (registration, ErrorHandler wiring, options pass-through, idempotency).
+
+#### Examples
+- `examples/router-app/components/user-card.js` — adds a "Remove" button (trash
+  icon) that triggers a danger confirm dialog; on confirmation emits `user:remove`
+  and shows a success toast.
+- `examples/router-app/components/users-list.js` — initialises state from the users
+  array, listens for `user:remove` on the EventBus, and drops the user from state so
+  the list re-renders without that card.
+- `examples/router-app/index.html` — installs `alertsPlugin`; adds `.user-card-remove`
+  hover style; updates the subtitle.
+
+#### Documentation
+- `docs/roadmap.md` — alerts moved to "Done"; fonts/scaffold/signals renumbered.
+
 ## [1.2.0] - 2026-06-22
 
 This release adds the **CSS/theming plugin** — the first batteries-included styling

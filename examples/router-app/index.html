@@ -53,13 +53,16 @@
         }
         .user-card-name { display: block; font-weight: 600; }
         .user-card-role { font-size: .82rem; color: var(--vf-text-muted); }
-        .user-card-toggle {
+        .user-card-actions { display: flex; align-items: center; gap: 2px; }
+        .user-card-toggle,
+        .user-card-remove {
             background: none; border: none; cursor: pointer;
             color: var(--vf-text-muted); padding: 4px;
             border-radius: var(--vf-radius-sm);
             display: flex; align-items: center;
         }
         .user-card-toggle:hover { background: var(--vf-border); color: var(--vf-text); }
+        .user-card-remove:hover { background: #fef2f2; color: var(--vf-danger, #ef4444); }
         .user-card-bio {
             padding: 0 4px 14px 4px;
             color: var(--vf-text); font-size: .92rem; line-height: 1.55;
@@ -99,13 +102,13 @@
     <div class="shell">
         <div class="topbar">
             <h2>VanillaForge</h2>
-            <span class="muted">· composition + routing + icons</span>
+            <span class="muted">· composition + routing + icons + alerts</span>
         </div>
         <div id="main-content"></div>
     </div>
 
     <script type="module">
-        import { createApp, iconsPlugin, themePlugin } from '../../src/framework.js';
+        import { createApp, iconsPlugin, themePlugin, alertsPlugin } from '../../src/framework.js';
         import { UsersList } from './components/users-list.js';
         import { UserDetail } from './components/user-detail.js';
 
@@ -132,6 +135,9 @@
 
         // Install the icons plugin (no Font Awesome needed).
         app.use(iconsPlugin);
+
+        // Install the alerts plugin (no SweetAlert needed).
+        app.use(alertsPlugin);
 
         await app.initialize({
             routes: {

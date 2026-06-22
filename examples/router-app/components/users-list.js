@@ -1,6 +1,6 @@
 import { BaseComponent } from '../../../src/framework.js';
 import { UserCard } from './user-card.js';
-import { users } from '../data/users.js';
+import { users as initialUsers } from '../data/users.js';
 
 /**
  * Lists all users using component composition.
@@ -9,16 +9,36 @@ import { users } from '../data/users.js';
  * is keyed by user.id so the framework preserves card state (expanded/collapsed)
  * across parent re-renders. Event delegation is automatically scoped — clicks
  * inside a card are handled by the card, not by this component.
+ *
+ * Listens for 'user:remove' events emitted by UserCard's remove action, then
+ * drops the user from state so the list re-renders without that card.
  */
 export class UsersList extends BaseComponent {
   constructor(eventBus, props = {}) {
     super(eventBus, { autoLoadCSS: false, ...props });
     this.name = 'users-list';
+    this.state = { users: [...initialUsers] };
+  }
+
+  async onInit() {
+    this.eventBus.on('user:remove', ({ id }) => {
+      this.setState({ users: this.state.users.filter((u) => u.id !== id) });
+    });
   }
 
   getTemplate() {
+    const { users } = this.state;
+
+    if (users.length === 0) {
+      return `
+        <section class="vf-card">
+          <h1>People</h1>
+          <p class="muted" style="margin-top:16px">No users left in the list.</p>
+        </section>`;
+    }
+
     return `
-      <section class="card">
+      <section class="vf-card">
         <h1>People</h1>
         <p class="muted">
           ${this.icon('info', { size: 14 })}

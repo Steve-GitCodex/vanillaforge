@@ -1,7 +1,7 @@
 /**
  * Validation Utilities
  * 
- * This module provides comprehensive validation functions for the Universal Contribution Manager.
+ * This module provides comprehensive validation functions for the VanillaForge.
  * It includes validation for user input, data integrity, business rules, and security.
  * 
  * Features:
@@ -13,7 +13,7 @@
  * - Business rule validation
  * - Security validation
  * 
- * @author Universal Contribution Manager Team
+ * @author VanillaForge Team
  * @version 3.0.0
  * @since 2024-06-14
  */

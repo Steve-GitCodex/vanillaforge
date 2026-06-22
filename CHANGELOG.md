@@ -1,9 +1,36 @@
 # Changelog
 
-All notable changes to the Vanilla JS SPA Framework will be documented in this file.
+All notable changes to VanillaForge will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Changed
+- **Unified the render pipeline.** `BaseComponent` is now the single owner of
+  rendering. The previous double-render (component init + a separate DOMRenderer)
+  and its three overlapping event systems were removed; `DOMRenderer` is gone.
+- **Reactive rendering via DOM morphing.** `setState()`/`updateProps()` now patch
+  only changed nodes via a new zero-dependency `dom-morph` module, preserving the
+  focus and caret of focused inputs and reconciling `data-key` lists in place.
+- **Single declarative event system.** `data-action` (click), `data-change`,
+  `data-input`, `data-keydown`, and `data-submit` are delegated once to the
+  component root and cleaned up on destroy.
+- Configurable mount container via `createApp({ mountId })` (default `main-content`).
+
+### Fixed
+- Router now navigates to the configured `fallback` route on a no-match, so the
+  404 component actually renders.
+- Router responds to `router:navigate` events from components.
+- Todo example renders correctly (previously a blank page — it mounted into a
+  container the router never used).
+
+### Added
+- DOM-morphing renderer (`src/core/dom-morph.js`).
+- Routing example with route params (`examples/router-app/`).
+- Test suite (Vitest + happy-dom) covering morph, components, router, event bus.
+- Flat ESLint config (`eslint.config.js`) and CI workflow.
 
 ## [1.0.0] - 2025-06-15
 
@@ -49,6 +76,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Edge 80+
 
 ### Bundle Size
-- Framework core: < 30KB minified
-- With all utilities: < 50KB minified
-- Gzipped: < 15KB
+- Framework core: ~48 KB minified (~14.5 KB gzipped)
+- Full demo bundle (with all utilities): ~56 KB minified

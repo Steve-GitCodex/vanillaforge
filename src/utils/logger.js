@@ -4,7 +4,7 @@
  * Provides structured logging functionality with different log levels,
  * formatting, and optional remote logging capabilities.
  * 
- * @author Universal Contribution Manager Team
+ * @author VanillaForge Team
  * @version 3.0.0
  * @since 2025-06-14
  */
@@ -266,7 +266,7 @@ export class Logger {
    * @param {string} level - New minimum log level
    */
   setLevel(level) {
-    if (this.levelPriorities.hasOwnProperty(level)) {
+    if (Object.prototype.hasOwnProperty.call(this.levelPriorities, level)) {
       this.level = level;
       this.info(`Log level changed to: ${level}`);
     } else {

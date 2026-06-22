@@ -1,0 +1,13 @@
+{
+  "name": "vanillaforge-router-example",
+  "version": "1.0.0",
+  "description": "Client-side routing example (lists + route params) built with VanillaForge",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx http-server . -p 3002 -c-1 --cors",
+    "start": "npm run dev"
+  },
+  "keywords": ["vanillaforge", "router", "spa", "example"],
+  "author": "Stephen Musyoka (https://github.com/Steve-GitCodex)",
+  "license": "MIT"
+}

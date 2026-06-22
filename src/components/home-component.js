@@ -75,14 +75,14 @@ export class HomeComponent extends BaseComponent {
               </div>
               
               <div class="counter-buttons">
-                <button class="btn btn-primary" onclick="window.homeComponent.increment()">➕ Increment</button>
-                <button class="btn btn-secondary" onclick="window.homeComponent.decrement()">➖ Decrement</button>
-                <button class="btn btn-outline" onclick="window.homeComponent.reset()">🔄 Reset</button>
+                <button class="btn btn-primary" data-action="increment">➕ Increment</button>
+                <button class="btn btn-secondary" data-action="decrement">➖ Decrement</button>
+                <button class="btn btn-outline" data-action="reset">🔄 Reset</button>
               </div>
-              
+
               <div class="demo-actions">
-                <button class="btn btn-info" onclick="window.homeComponent.testPerformance()">📊 Test Performance</button>
-                <button class="btn btn-success" onclick="window.homeComponent.showAlert()">🎉 Show Alert</button>
+                <button class="btn btn-info" data-action="testPerformance">📊 Test Performance</button>
+                <button class="btn btn-success" data-action="showAlert">🎉 Show Alert</button>
               </div>
               
               ${this.state.performanceMetrics ? `
@@ -135,9 +135,22 @@ await app.start();</code></pre>
         </div>
       </div>
     `;
-  }  /**
-   * Component methods - exposed globally for onclick handlers
+  }
+
+  /**
+   * Declarative action handlers, wired to the template via `data-action`.
+   * @returns {Object} Map of action name to handler
    */
+  getMethods() {
+    return {
+      increment: () => this.increment(),
+      decrement: () => this.decrement(),
+      reset: () => this.reset(),
+      testPerformance: () => this.testPerformance(),
+      showAlert: () => this.showAlert(),
+    };
+  }
+
   increment() {
     const startTime = performance.now();
     this.setState({ 
@@ -231,10 +244,7 @@ await app.start();</code></pre>
     return {
       onMount: async () => {
         this.logger.info('Enhanced home component mounted');
-        
-        // Expose component globally for onclick handlers
-        window.homeComponent = this;
-        
+
         // Emit component ready event
         if (this.eventBus) {
           this.eventBus.emit('component:ready', {
@@ -251,12 +261,7 @@ await app.start();</code></pre>
       
       onUnmount: () => {
         this.logger.info('Enhanced home component unmounted');
-        
-        // Clean up global reference
-        if (window.homeComponent === this) {
-          delete window.homeComponent;
-        }
-        
+
         // Emit component cleanup event
         if (this.eventBus) {
           this.eventBus.emit('component:cleanup', {

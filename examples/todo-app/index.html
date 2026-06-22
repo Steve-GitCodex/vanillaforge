@@ -217,8 +217,9 @@
 
         class TodoApp extends BaseComponent {
             constructor(eventBus, props) {
-                super(eventBus, props);
-                this.name = 'todo-app';
+                // CSS is inline in this single-file example, so skip auto-loading.
+                super(eventBus, { autoLoadCSS: false, ...props });
+                this.name = 'todo';
                 this.state = {
                     todos: this.loadTodos(),
                     newTodo: '',
@@ -258,12 +259,13 @@
                         <div class="todo-content">
                             <div class="todo-input-section">
                                 <div class="todo-input-group">
-                                    <input 
-                                        type="text" 
-                                        class="todo-input" 
+                                    <input
+                                        type="text"
+                                        class="todo-input"
                                         placeholder="What needs to be done?"
                                         value="${this.state.newTodo}"
-                                        data-input="newTodo"
+                                        data-input="handleInput"
+                                        data-keydown="handleKeyDown"
                                     >
                                     <button class="btn btn-primary" data-action="addTodo">
                                         Add Todo
@@ -303,12 +305,12 @@
                             ${filteredTodos.length > 0 ? `
                                 <ul class="todo-list">
                                     ${filteredTodos.map((todo, index) => `
-                                        <li class="todo-item ${todo.completed ? 'completed' : ''}">
-                                            <input 
-                                                type="checkbox" 
+                                        <li class="todo-item ${todo.completed ? 'completed' : ''}" data-key="${todo.id}">
+                                            <input
+                                                type="checkbox"
                                                 class="todo-checkbox"
                                                 ${todo.completed ? 'checked' : ''}
-                                                data-action="toggleTodo" 
+                                                data-change="toggleTodo"
                                                 data-id="${todo.id}"
                                             >
                                             <span class="todo-text">${this.escapeHtml(todo.text)}</span>
@@ -441,14 +443,14 @@
                     },
 
                     handleInput: (e) => {
-                        const inputName = e.target.dataset.input;
-                        if (inputName === 'newTodo') {
-                            this.setState({ newTodo: e.target.value });
-                        }
+                        // Track the field value without re-rendering on every
+                        // keystroke; the morph keeps the input in sync on the
+                        // next render (e.g. after adding a todo).
+                        this.setState({ newTodo: e.target.value }, false);
                     },
 
                     handleKeyDown: (e) => {
-                        if (e.key === 'Enter' && e.target.dataset.input === 'newTodo') {
+                        if (e.key === 'Enter') {
                             this.getMethods().addTodo();
                         }
                     }
@@ -457,28 +459,13 @@
 
             getLifecycle() {
                 return {
+                    // Event wiring is fully declarative (data-action / data-change
+                    // / data-input / data-keydown) and handled by the framework's
+                    // delegation, so no manual listeners are needed here.
                     onMount: async () => {
                         this.logger.info('Todo app mounted');
-                        
-                        if (this.element) {
-                            const methods = this.getMethods();
-                            
-                            // Handle clicks
-                            this.element.addEventListener('click', (e) => {
-                                const action = e.target.dataset.action;
-                                if (methods[action]) {
-                                    methods[action](e);
-                                }
-                            });
-                            
-                            // Handle input changes
-                            this.element.addEventListener('input', methods.handleInput);
-                            
-                            // Handle enter key
-                            this.element.addEventListener('keydown', methods.handleKeyDown);
-                        }
                     },
-                    
+
                     onUnmount: () => {
                         this.logger.info('Todo app unmounted');
                     }
@@ -486,10 +473,11 @@
             }
         }
 
-        // Initialize the app
-        const app = createApp({ 
+        // Initialize the app. The single page mounts components into #app.
+        const app = createApp({
             appName: 'VanillaForge Todo App',
-            debug: true 
+            mountId: 'app',
+            debug: true
         });
 
         await app.initialize({

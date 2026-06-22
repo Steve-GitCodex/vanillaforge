@@ -4,6 +4,13 @@
   "description": "VanillaForge - A modern, lightweight vanilla JavaScript framework for forging Single Page Applications",
   "type": "module",
   "main": "src/framework.js",
+  "module": "src/framework.js",
+  "exports": {
+    ".": "./src/framework.js",
+    "./components/base": "./src/components/base-component.js",
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
   "keywords": [
     "vanillaforge",
     "vanilla-javascript",
@@ -16,32 +23,38 @@
     "modern-web",
     "forge"
   ],
-  "author": "",
-  "license": "MIT",  "scripts": {
+  "author": "Stephen Musyoka (https://github.com/Steve-GitCodex)",
+  "license": "MIT",
+  "scripts": {
     "build": "node scripts/build.js",
     "dev": "npm run build && npm run serve",
     "serve": "npx http-server dist -p 3000 -c-1 --cors",
     "serve-dev": "npx http-server . -p 3000 -c-1 --cors",
     "lint": "eslint src/ --ext .js",
     "format": "prettier --write \"src/**/*.{js,css,html}\"",
-    "test": "echo 'Tests will be added'",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "example": "cd examples/todo-app && npm run dev",
+    "example:router": "cd examples/router-app && npm run dev",
     "css:discover": "node scripts/css-discovery.js",
     "css:generate": "node scripts/css-discovery.js --generate"
-  },"devDependencies": {
-    "eslint": "^9.12.0",
-    "prettier": "^3.3.3",
-    "http-server": "^14.1.1",
-    "esbuild": "^0.20.0",
-    "glob": "^10.3.0"
   },
-  "dependencies": {},
+  "devDependencies": {
+    "@eslint/js": "^9.29.0",
+    "esbuild": "^0.20.0",
+    "eslint": "^9.12.0",
+    "glob": "^10.3.0",
+    "happy-dom": "^20.10.6",
+    "http-server": "^14.1.1",
+    "prettier": "^3.3.3",
+    "vitest": "^4.1.9"
+  },
   "engines": {
     "node": ">=18.0.0"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/vanillaforge.git"
+    "url": "https://github.com/Steve-GitCodex/vanillaforge.git"
   },
   "files": [
     "src/",
@@ -55,15 +68,16 @@
     "tagline": "Forge modern SPAs with vanilla JavaScript",
     "features": [
       "Component-based architecture",
-      "Client-side routing",
+      "Client-side routing with params",
       "Event-driven communication",
-      "State management",
+      "DOM-morphing reactive rendering",
+      "Component-local state",
       "Error handling",
       "Logging system",
       "Build system",
-      "No external dependencies"
+      "No runtime dependencies"
     ],
-    "size": "< 50KB minified",
+    "size": "~14.5 KB min+gzip core (~48 KB minified)",
     "browserSupport": "ES2020+ (Chrome 80+, Firefox 72+, Safari 14+)"
   }
 }

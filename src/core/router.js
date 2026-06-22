@@ -128,10 +128,17 @@ export class Router {
   setupEventListeners() {
     // Handle browser back/forward buttons
     window.addEventListener('popstate', this.handlePopState);
-    
+
     // Handle link clicks for SPA navigation
     document.addEventListener('click', this.handleLinkClick);
-    
+
+    // Allow components to request navigation over the event bus
+    this.eventBus.on('router:navigate', (payload) => {
+      const path = typeof payload === 'string' ? payload : payload?.path;
+      const options = (payload && typeof payload === 'object') ? payload.options : undefined;
+      if (path) this.navigateTo(path, options);
+    });
+
     this.logger.debug('Event listeners set up');
   }
   /**
@@ -200,20 +207,18 @@ export class Router {
     try {
       const { route, params } = this.findRoute(path);      if (!route) {
         this.logger.warn(`No route found for path: ${path}`);
-        
-        // If no route found and we have a base path, try redirecting to home
-        if (this.basePath && path === '/') {
-          // This is likely the case where GitHub Pages redirected to the base path
-          // Try to navigate to the home route
-          const homeRoute = this.findRoute('/');
-          if (homeRoute.route) {
-            this.logger.info('Redirecting to home route from base path');
-            this.isNavigating = false;
-            return this.navigateTo('/', { replace: true });
-          }
-        }
-        
         this.eventBus.emit('router:not-found', { path });
+
+        // Fall back to the configured route (e.g. a 404 component) so the user
+        // sees something instead of a blank screen. Guard against looping when
+        // the fallback itself is unregistered.
+        const fallback = this.config.fallback;
+        if (fallback && path !== fallback && this.findRoute(fallback).route) {
+          this.logger.info(`Routing to fallback: ${fallback}`);
+          this.isNavigating = false;
+          return this.navigateTo(fallback, { replace: true });
+        }
+
         this.isNavigating = false;
         return;
       }

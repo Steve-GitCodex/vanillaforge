@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Routing Example - VanillaForge</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f4f5f7;
+            color: #1f2933;
+            padding: 40px 20px;
+        }
+        .shell { max-width: 640px; margin: 0 auto; }
+        .topbar {
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 24px;
+        }
+        .topbar h2 { font-size: 1.1rem; }
+        .topbar .muted { font-size: .85rem; }
+        .card {
+            background: #fff; border-radius: 12px; padding: 28px;
+            box-shadow: 0 10px 30px rgba(0,0,0,.06);
+        }
+        h1 { margin-bottom: 8px; }
+        .muted { color: #7b8794; }
+        .role { color: #3b82f6; font-weight: 600; margin-bottom: 12px; }
+        .list { list-style: none; margin-top: 16px; }
+        .list li { border-top: 1px solid #eef1f4; }
+        .list li:first-child { border-top: none; }
+        .list a {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 14px 4px; text-decoration: none; color: inherit;
+        }
+        .list a:hover { color: #3b82f6; }
+        .btn {
+            display: inline-block; margin-bottom: 16px;
+            color: #3b82f6; text-decoration: none; font-weight: 600;
+        }
+        .btn:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="shell">
+        <div class="topbar">
+            <h2>🔥 VanillaForge</h2>
+            <span class="muted">· client-side routing with params</span>
+        </div>
+        <div id="main-content"></div>
+    </div>
+
+    <script type="module">
+        import { createApp } from '../../src/framework.js';
+        import { UsersList } from './components/users-list.js';
+        import { UserDetail } from './components/user-detail.js';
+
+        const app = createApp({ appName: 'VanillaForge Router Example', debug: true });
+
+        await app.initialize({
+            routes: {
+                '/': UsersList,
+                '/users/:id': UserDetail,
+            },
+        });
+
+        await app.start();
+    </script>
+</body>
+</html>

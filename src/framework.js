@@ -57,6 +57,8 @@ export class FrameworkApp {
         this.config = {
             appName: 'VanillaForge App',
             debug: false,
+            // DOM id that route components are mounted into.
+            mountId: 'main-content',
             router: {
                 mode: 'history',
                 fallback: '/404'
@@ -74,7 +76,7 @@ export class FrameworkApp {
         this.notification = new Notification();
         this.errorHandler = new ErrorHandler(this.notification);
         this.validation = new ValidationUtils(this.logger.child('Validation'));
-        this.componentManager = new ComponentManager(this.eventBus, this.logger.child('ComponentManager'), this.errorHandler);
+        this.componentManager = new ComponentManager(this.eventBus, this.logger.child('ComponentManager'), this.errorHandler, { mountId: this.config.mountId });
         this.router = null;
         this.isInitialized = false;
         this.performanceUtils = performanceUtils;

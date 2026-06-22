@@ -42,19 +42,20 @@ await app.initialize({
 
 // Access the variables in your component
 class UserComponent extends BaseComponent {
-    async init() {
-        // Get the ID from the URL
-        const userId = this.props.params.id; // If URL is /users/123, this is '123'
-        
+    async onInit() {
+        // Get the ID from the matched route
+        const userId = this.props.route?.params?.id; // If URL is /users/123, this is '123'
+
         // Use it to load data
         this.state.user = await fetchUser(userId);
     }
 
-    render() {
+    getTemplate() {
+        if (!this.state.user) return '<div>Loading…</div>';
         return `
             <div class="user-profile">
                 <h1>User: ${this.state.user.name}</h1>
-                <p>User ID: ${this.props.params.id}</p>
+                <p>User ID: ${this.props.route.params.id}</p>
             </div>
         `;
     }

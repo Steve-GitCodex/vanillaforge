@@ -3,7 +3,7 @@
  * 
  * Wrapper for SweetAlert2 to ensure it's available and provide consistent styling
  * 
- * @author Universal Contribution Manager Team
+ * @author VanillaForge Team
  * @version 3.0.0
  * @since 2025-06-14
  */

@@ -14,7 +14,7 @@ export class NotFoundComponent extends BaseComponent {
   constructor(eventBus, props = {}) {
     super(eventBus, props);
     this.name = 'not-found-component';
-    this.cssPath = 'src/styles/components/not-found.css';
+    this.cssPath = 'src/styles/components/not-found-component.css';
   }
 
   /**

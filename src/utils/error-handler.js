@@ -1,10 +1,10 @@
 /**
  * Error Handler Utility
  * 
- * Centralized error handling system for the Universal Contribution Manager.
+ * Centralized error handling system for the VanillaForge.
  * Provides consistent error processing, user notifications, and error reporting.
  * 
- * @author Universal Contribution Manager Team
+ * @author VanillaForge Team
  * @version 3.0.0
  * @since 2025-06-14
  */

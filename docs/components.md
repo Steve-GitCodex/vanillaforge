@@ -4,218 +4,191 @@
 
 ## What are Components?
 
-Components are the building blocks of your VanillaForge application. Think of them like custom HTML elements - each component is a self-contained piece of your user interface that manages its own:
+Components are the building blocks of a VanillaForge application. Each component
+is a self-contained class that manages its own:
 
-- **Content** (what HTML it shows)
-- **Data** (what information it keeps track of)
-- **Behavior** (how it responds to user interactions)
+- **Content** — the HTML it renders (`getTemplate()`)
+- **Data** — local reactive state (`this.state` + `setState()`)
+- **Behavior** — declarative event handlers (`getMethods()`)
 
-You can combine many small components to build complex applications, and reuse the same component in multiple places.
+All components extend `BaseComponent`.
 
 ## Basic Component
 
-The simplest component just needs to return some HTML. All components must extend from `BaseComponent`:
+A component must implement `getTemplate()` (or `getHTML()` for async), returning
+an HTML string:
 
 ```javascript
+import { BaseComponent } from '../src/framework.js';
+
 class MyComponent extends BaseComponent {
     constructor(eventBus, props = {}) {
         super(eventBus, props);
-        this.state = { message: 'Hello!' };  // Component's data
+        this.name = 'my-component';
+        this.state = { message: 'Hello!' };
     }
 
-    render() {
-        // This method returns the HTML for your component
+    getTemplate() {
         return `<div class="my-component">${this.state.message}</div>`;
-    }
-
-    afterRender() {
-        // Add event listeners here (after HTML is created)
     }
 }
 ```
 
-## Component with State
+## State and re-rendering
 
-State is the data your component keeps track of. When state changes, the component automatically re-renders to show the new data:
+`setState()` merges new values into `this.state` and re-renders. Re-renders are
+applied with a DOM morph, so only changed nodes update and focused inputs keep
+their caret — you never lose typing mid-render.
 
 ```javascript
-class CounterComponent extends BaseComponent {
+class Counter extends BaseComponent {
     constructor(eventBus, props = {}) {
         super(eventBus, props);
-        // Initialize the component's data
+        this.name = 'counter';
         this.state = { count: 0 };
     }
 
-    render() {
-        // Use state data in your HTML
+    getTemplate() {
         return `
             <div class="counter">
                 <p>Count: ${this.state.count}</p>
-                <button id="increment">+</button>
-                <button id="decrement">-</button>
+                <button data-action="increment">+</button>
+                <button data-action="decrement">-</button>
             </div>
         `;
     }
 
-    afterRender() {
-        // Add event listeners after the HTML is created
-        this.element.querySelector('#increment').onclick = () => {
-            // Update state - this automatically re-renders the component
-            this.setState({ count: this.state.count + 1 });
-        };
-        
-        this.element.querySelector('#decrement').onclick = () => {
-            this.setState({ count: this.state.count - 1 });
+    getMethods() {
+        return {
+            increment: () => this.setState({ count: this.state.count + 1 }),
+            decrement: () => this.setState({ count: this.state.count - 1 }),
         };
     }
 }
 ```
 
-## Lifecycle Methods
+Pass `setState(newState, false)` to update state **without** re-rendering (useful
+for tracking a controlled input's value between keystrokes).
 
-Components go through different stages: creation, rendering, and destruction. You can run code at each stage by defining these methods:
+## Handling events
+
+Wire DOM events declaratively with `data-*` attributes. Each attribute maps to a
+named entry in `getMethods()` and fires on exactly one event type:
+
+| Attribute      | Fires on  | Example                                  |
+| -------------- | --------- | ---------------------------------------- |
+| `data-action`  | `click`   | `<button data-action="save">Save</button>` |
+| `data-change`  | `change`  | `<input type="checkbox" data-change="toggle">` |
+| `data-input`   | `input`   | `<input data-input="onType">`            |
+| `data-keydown` | `keydown` | `<input data-keydown="onKey">`           |
+| `data-submit`  | `submit`  | `<form data-submit="onSubmit">`          |
+
+Handlers receive `(event, matchedElement)`. Listeners are delegated to the
+component root once and removed automatically when the component is destroyed —
+no manual `addEventListener`/cleanup needed.
+
+For keyed lists, add `data-key` so reordering or removing items reuses DOM nodes:
+
+```javascript
+getTemplate() {
+    return `<ul>${this.state.todos
+        .map((t) => `<li data-key="${t.id}">${t.text}</li>`)
+        .join('')}</ul>`;
+}
+```
+
+## Lifecycle hooks
+
+Override these to run code at each stage (all optional):
 
 ```javascript
 class LifecycleComponent extends BaseComponent {
-    async init() {
-        // Called ONCE before the first render
-        // Good for: loading data from APIs, setting up subscriptions
-        console.log('Component initializing');
+    async onInit() {
+        // Called once before the first render.
+        // Good for: loading data, subscribing to events.
         this.state.data = await fetchSomeData();
     }
 
-    render() {
-        // Called EVERY TIME the component needs to update its HTML
-        // Required method - must return an HTML string
-        return '<div>Component content</div>';
+    async onRender() {
+        // Called after each render (HTML is in the DOM).
     }
 
-    afterRender() {
-        // Called AFTER each render (when HTML is in the DOM)
-        // Good for: adding event listeners, focusing inputs, setting up charts
-        console.log('Component rendered');
+    onDestroy() {
+        // Called when the component is being removed.
+        // Good for: clearing timers you created.
     }
 
-    beforeDestroy() {
-        // Called BEFORE the component is removed from the page
-        // Good for: cleaning up timers, removing event listeners, canceling API calls
-        console.log('Component cleaning up');
+    getLifecycle() {
+        return {
+            onMount: async () => { /* after the component is mounted by the manager */ },
+            onUnmount: () => { /* before it is unmounted */ },
+        };
     }
 }
 ```
 
-## Props and Parameters
+## Props and route params
 
-Components can receive data from two sources:
-
-1. **URL Parameters** - data from the URL (like `/users/123`)
-2. **Props** - data passed from parent components
+Components receive a `props` object. When a component is mounted by the router,
+the matched route (including URL params) is available at `this.props.route`:
 
 ```javascript
-// URL: /users/123
+// Route: /users/:id   ->   URL: /users/123
 class UserComponent extends BaseComponent {
-    async init() {
-        // Get data from the URL
-        const userId = this.props.params.id; // '123' from /users/123
-        
-        // Get data passed from parent
-        const userData = this.props.userData; // Passed when component was created
-        
-        // Load user data based on URL parameter
+    constructor(eventBus, props = {}) {
+        super(eventBus, props);
+        this.name = 'user';
+    }
+
+    async onInit() {
+        const userId = this.props.route?.params?.id; // '123'
         this.state.user = await fetchUser(userId);
     }
 
-    render() {
-        if (!this.state.user) {
-            return '<div>Loading user...</div>';
-        }
-
+    getTemplate() {
+        if (!this.state.user) return '<div>Loading…</div>';
         return `
             <div class="user-profile">
                 <h1>${this.state.user.name}</h1>
-                <p>User ID: ${this.props.params.id}</p>
-                <p>Email: ${this.state.user.email}</p>
-            </div>
-        `;
+                <p>User ID: ${this.props.route.params.id}</p>
+            </div>`;
     }
 }
 ```
 
-## Component Communication
+## Component communication
 
-Components can talk to each other using the event system. This lets you build applications where different parts can communicate without being directly connected:
+Use the event bus to let components talk without direct references. `subscribe()`
+registers a handler that is cleaned up automatically on destroy:
 
 ```javascript
 class ParentComponent extends BaseComponent {
-    async init() {
-        // Listen for messages from child components
-        this.eventBus.on('child:action', (data) => {
-            console.log('Child did something:', data);
-            // Update parent based on child action
+    async onInit() {
+        this.subscribe('child:action', (data) => {
             this.setState({ lastChildAction: data.action });
         });
-    }
-
-    beforeDestroy() {
-        // Always clean up event listeners
-        this.eventBus.off('child:action');
     }
 }
 
 class ChildComponent extends BaseComponent {
-    afterRender() {
-        this.element.querySelector('button').onclick = () => {
-            // Tell parent (and anyone else listening) about this action
-            this.eventBus.emit('child:action', { 
-                action: 'button-click',
-                timestamp: Date.now()
-            });
+    getTemplate() {
+        return `<button data-action="notify">Notify parent</button>`;
+    }
+    getMethods() {
+        return {
+            notify: () => this.emit('child:action', { action: 'button-click' }),
         };
     }
 }
 ```
 
-## Best Practices
+## Best practices
 
-### Keep Components Small
-Each component should have one clear purpose. If a component is doing too many things, split it into smaller components.
-
-```javascript
-// Good - focused component
-class UserAvatar extends BaseComponent {
-    render() {
-        return `<img src="${this.props.user.avatar}" alt="${this.props.user.name}">`;
-    }
-}
-
-// Good - another focused component  
-class UserName extends BaseComponent {
-    render() {
-        return `<span class="user-name">${this.props.user.name}</span>`;
-    }
-}
-```
-
-### Clean Up Resources
-Always clean up timers, event listeners, and API calls when components are destroyed:
-
-```javascript
-class ComponentWithTimer extends BaseComponent {
-    afterRender() {
-        // Set up a timer
-        this.timer = setInterval(() => {
-            this.updateClock();
-        }, 1000);
-    }
-
-    beforeDestroy() {
-        // Clean up the timer
-        if (this.timer) {
-            clearInterval(this.timer);
-        }
-    }
-}
-```
+- **Keep components small** — one clear responsibility each.
+- **Prefer declarative events** (`data-*` + `getMethods()`) over manual listeners.
+- **Use `data-key`** for lists so identity and DOM state are preserved.
+- **Clean up timers** you create in `onDestroy()`; event-bus subscriptions made
+  with `subscribe()` and delegated DOM listeners are cleaned up for you.
 
 ---
 

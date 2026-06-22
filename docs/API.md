@@ -32,27 +32,30 @@ app.navigate('/about');
 Components are reusable pieces of your user interface. Think of them like custom HTML elements - each component manages its own content, styling, and behavior. You can combine many small components to build complex applications.
 
 ### Creating a Component
-All components extend from `BaseComponent` and must have a `render()` method that returns HTML:
+All components extend from `BaseComponent` and must implement `getTemplate()`
+(returns an HTML string). Events are wired declaratively via `getMethods()`:
 
 ```javascript
 class MyComponent extends BaseComponent {
     constructor(eventBus, props = {}) {
         super(eventBus, props);
-        this.state = { count: 0 };  // Component's data
+        this.name = 'my-component';
+        this.state = { count: 0 };
     }
 
-    render() {
-        // This method returns the HTML for your component
-        return `<div>Count: ${this.state.count}</div>`;
+    getTemplate() {
+        return `
+            <div>
+                <span>Count: ${this.state.count}</span>
+                <button data-action="increment">+</button>
+            </div>`;
     }
 
-    afterRender() {
-        // Add event listeners after the HTML is created
-    }
-
-    // Update component data and automatically re-render
-    increment() {
-        this.setState({ count: this.state.count + 1 });
+    getMethods() {
+        return {
+            // setState merges state and re-renders (via DOM morph)
+            increment: () => this.setState({ count: this.state.count + 1 }),
+        };
     }
 }
 ```
@@ -150,27 +153,27 @@ Here are the methods you can override in your components:
 
 ```javascript
 class Component extends BaseComponent {
-    async init() {
+    async onInit() {
         // Called once before the first render
-        // Good for: loading data, setting up event listeners
+        // Good for: loading data, subscribing to events
         console.log('Component is initializing');
     }
 
-    render() {
-        // Called every time the component needs to update its HTML
-        // Required method - must return HTML string
+    getTemplate() {
+        // Called every time the component renders
+        // Required - must return an HTML string
         return '<div>Hello</div>';
     }
 
-    afterRender() {
-        // Called after the HTML is added to the page
-        // Good for: adding click handlers, focusing inputs
+    async onRender() {
+        // Called after each render (HTML is in the DOM)
+        // Good for: focusing inputs, initializing third-party widgets
         console.log('Component is now visible');
     }
 
-    beforeDestroy() {
+    onDestroy() {
         // Called before the component is removed
-        // Good for: cleaning up timers, removing event listeners
+        // Good for: cleaning up timers you created
         console.log('Component is about to be removed');
     }
 }

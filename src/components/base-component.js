@@ -19,6 +19,7 @@
 import { EventBus } from '../core/event-bus.js';
 import { Logger } from '../utils/logger.js';
 import { ErrorHandler } from '../utils/error-handler.js';
+import { morph } from '../core/dom-morph.js';
 
 /**
  * Base Component Class
@@ -65,12 +66,13 @@ export class BaseComponent {
         // Initialize error handler
         this.errorHandler = new ErrorHandler();
 
+        // Delegated DOM listeners attached once to the stable wrapper element.
+        this._delegationBound = false;
+        this._delegatedListeners = [];
+
         // Bind methods to maintain context
         this.handleError = this.handleError.bind(this);
         this.cleanup = this.cleanup.bind(this);
-
-        // Setup error boundary
-        this.setupErrorBoundary();
 
         this.logger.info('Component initialized', { name: this.name, props: this.props });
     }
@@ -129,16 +131,15 @@ export class BaseComponent {
         if (this.isDestroyed) {
             throw new Error('Cannot render destroyed component');
         }
+        if (!this.container) {
+            throw new Error('Component has no container to render into');
+        }
 
         const renderStartTime = performance.now();
 
         try {
             this.logger.debug('Rendering component');
 
-            // Clear existing content
-            if (this.isRendered) {
-                this.cleanup();
-            }
             // Generate component HTML
             let html;
             if (typeof this.getHTML === 'function') {
@@ -149,14 +150,22 @@ export class BaseComponent {
                 throw new Error('Component must implement getHTML() or getTemplate() method');
             }
 
-            // Insert HTML into container
-            this.container.innerHTML = html;
+            if (!this.element) {
+                // First render: create a stable wrapper that persists across
+                // re-renders so event delegation and focus survive morphing.
+                this.element = document.createElement('div');
+                this.element.className = `component ${this.name}`.trim();
+                this.container.innerHTML = '';
+                this.container.appendChild(this.element);
+                this.element.innerHTML = html;
+                this.bindEventDelegation();
+            } else {
+                // Subsequent renders: patch only what changed.
+                morph(this.element, html);
+            }
 
             // Post-render setup
             await this.onRender();
-
-            // Setup event delegation for rendered elements
-            this.setupEventDelegation();
 
             this.isRendered = true;
 
@@ -419,7 +428,7 @@ export class BaseComponent {
      * @returns {HTMLElement|null} First matching element
      */
     querySelector(selector) {
-        return this.container.querySelector(selector);
+        return (this.element || this.container).querySelector(selector);
     }
 
     /**
@@ -429,7 +438,7 @@ export class BaseComponent {
      * @returns {NodeList} All matching elements
      */
     querySelectorAll(selector) {
-        return this.container.querySelectorAll(selector);
+        return (this.element || this.container).querySelectorAll(selector);
     }
 
     /**
@@ -568,82 +577,72 @@ export class BaseComponent {
     // ===========================
 
     /**
-     * Setup error boundary for the component
-     * @private
-     */
-    setupErrorBoundary() {
-        // Catch unhandled errors in component container
-        if (this.container) {
-            window.addEventListener('error', (event) => {
-                if (this.container.contains(event.target)) {
-                    this.handleError(event.error, 'Unhandled error in component');
-                }
-            });
-        }
-    }
-
-    /**
      * Setup component-specific event listeners
+     * Override in subclasses for one-time, non-delegated setup.
      * @private
      */
     setupEventListeners() {
         // Override in subclasses
-    }    /**
-     * Setup event delegation for rendered elements
-     * Automatically binds data-action attributes to component methods
+    }
+
+    /**
+     * Bind delegated DOM listeners once to the stable wrapper element.
+     *
+     * Because the wrapper survives every morph, these listeners are attached a
+     * single time and never need rebinding. Each event type maps to exactly one
+     * declarative attribute so a given interaction fires once:
+     *
+     *   data-action  -> click   (buttons, links, anything clickable)
+     *   data-change  -> change  (checkboxes, radios, selects)
+     *   data-input   -> input   (text inputs, textareas)
+     *   data-keydown -> keydown
+     *   data-submit  -> submit  (forms)
+     *
+     * The named method is looked up on getMethods() at dispatch time and called
+     * with (event, matchedElement).
      * @private
      */
-    setupEventDelegation() {
-        if (!this.element) return;
+    bindEventDelegation() {
+        if (this._delegationBound || !this.element) return;
 
-        // Get component methods
-        const methods = this.getMethods ? this.getMethods() : {};
+        const map = [
+            ['click', 'data-action', true],
+            ['change', 'data-change', false],
+            ['input', 'data-input', false],
+            ['keydown', 'data-keydown', false],
+            ['submit', 'data-submit', true],
+        ];
 
-        // Set up click event delegation for data-action attributes
-        const clickHandler = (event) => {
-            const target = event.target.closest('[data-action]');
-            if (!target) return;
+        for (const [eventType, attr, preventDefault] of map) {
+            const handler = (event) => this.dispatchDelegated(event, attr, preventDefault);
+            this.element.addEventListener(eventType, handler);
+            this._delegatedListeners.push({ eventType, handler });
+        }
 
-            const action = target.getAttribute('data-action');
-            if (action && typeof methods[action] === 'function') {
-                event.preventDefault();
-                try {
-                    methods[action](event, target);
-                    this.logger.debug(`Action executed: ${action}`);
-                } catch (error) {
-                    this.handleError(error, `Failed to execute action: ${action}`);
-                }
+        this._delegationBound = true;
+        this.logger.debug('Event delegation bound');
+    }
+
+    /**
+     * Resolve and invoke the method named by a delegated attribute.
+     * @private
+     */
+    dispatchDelegated(event, attr, preventDefault) {
+        const target = event.target.closest(`[${attr}]`);
+        if (!target || !this.element.contains(target)) return;
+
+        const action = target.getAttribute(attr);
+        const methods = (typeof this.getMethods === 'function') ? this.getMethods() : {};
+
+        if (action && typeof methods[action] === 'function') {
+            if (preventDefault) event.preventDefault();
+            try {
+                methods[action].call(this, event, target);
+                this.logger.debug(`Action executed: ${action} (${attr})`);
+            } catch (error) {
+                this.handleError(error, `Failed to execute action: ${action}`);
             }
-        };
-
-        this.element.addEventListener('click', clickHandler);
-
-        // Store for cleanup
-        this.addEventListener(this.element, 'click', clickHandler);
-
-        // Set up form submission delegation
-        const submitHandler = (event) => {
-            const form = event.target.closest('form[data-submit], form[data-action]');
-            if (!form) return;
-
-            const action = form.getAttribute('data-submit') || form.getAttribute('data-action');
-            if (action && typeof methods[action] === 'function') {
-                event.preventDefault();
-                try {
-                    methods[action](event, form);
-                    this.logger.debug(`Form action executed: ${action}`);
-                } catch (error) {
-                    this.handleError(error, `Failed to execute form action: ${action}`);
-                }
-            }
-        };
-
-        this.element.addEventListener('submit', submitHandler);
-
-        // Store for cleanup
-        this.addEventListener(this.element, 'submit', submitHandler);
-
-        this.logger.debug('Event delegation set up successfully');
+        }
     }
 
     /**
@@ -677,7 +676,18 @@ export class BaseComponent {
                 this.logger.warn('Failed to remove event listener', { key, error });
             }
         }
-        this.eventListeners.clear();        // Clean up EventBus subscriptions
+        this.eventListeners.clear();
+
+        // Clean up delegated listeners attached to the wrapper element
+        if (this.element) {
+            for (const { eventType, handler } of this._delegatedListeners) {
+                this.element.removeEventListener(eventType, handler);
+            }
+        }
+        this._delegatedListeners = [];
+        this._delegationBound = false;
+
+        // Clean up EventBus subscriptions
         for (const subscription of this.eventBusSubscriptions) {
             try {
                 subscription.unsubscribe();

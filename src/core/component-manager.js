@@ -11,19 +11,21 @@
 
 import { Logger } from '../utils/logger.js';
 import { ErrorHandler } from '../utils/error-handler.js';
-import { DOMRenderer } from './dom-renderer.js';
 
 export class ComponentManager {
-  constructor(eventBus, logger, errorHandler) {
+  constructor(eventBus, logger, errorHandler, options = {}) {
     this.eventBus = eventBus;
     this.logger = logger || new Logger('ComponentManager');
     this.errorHandler = errorHandler || new ErrorHandler();
-    this.renderer = new DOMRenderer(this.logger);
-    
+
+    // Default container id route components are mounted into. Configurable so
+    // apps and examples aren't locked to a single magic element id.
+    this.mountId = options.mountId || 'main-content';
+
     this.components = new Map();
     this.activeComponents = new Map();
     this.isInitialized = false;
-    
+
     this.logger.debug('ComponentManager instance created');
   }
   /**
@@ -108,20 +110,27 @@ export class ComponentManager {
    * @param {string} containerId - Target container ID
    * @returns {Promise<Object>} Component instance
    */
-  async loadComponentClass(ComponentClass, props = {}, containerId = 'main-content') {
+  async loadComponentClass(ComponentClass, props = {}, containerId = this.mountId) {
     try {
       const container = document.getElementById(containerId);
       if (!container) {
         throw new Error(`Container not found: ${containerId}`);
       }
 
+      // Unload any component currently mounted in this container so the new
+      // route owns it cleanly (single render path, no leftover listeners).
+      await this.unloadComponentsInContainer(container);
+
       const instance = new ComponentClass(this.eventBus, props);
       instance.container = container;
 
+      // init() performs the single render (auto-render is on by default) and
+      // binds delegated DOM listeners on the component's stable wrapper.
       await instance.init();
-      this.renderer.render(instance, container);      if (instance.getLifecycle && typeof instance.getLifecycle === 'function') {
+
+      if (typeof instance.getLifecycle === 'function') {
         const lifecycle = instance.getLifecycle();
-        if (lifecycle.onMount && typeof lifecycle.onMount === 'function') {
+        if (lifecycle && typeof lifecycle.onMount === 'function') {
           await lifecycle.onMount.call(instance);
         }
       }
@@ -137,6 +146,20 @@ export class ComponentManager {
         containerId
       });
       throw error;
+    }
+  }
+
+  /**
+   * Unload every active component currently mounted inside a container.
+   *
+   * @param {HTMLElement} container - Target container element
+   * @private
+   */
+  async unloadComponentsInContainer(container) {
+    for (const [id, instance] of this.activeComponents) {
+      if (instance.container === container) {
+        await this.unloadComponent(id);
+      }
     }
   }
 
@@ -160,19 +183,18 @@ export class ComponentManager {
           await lifecycle.onUnmount.call(instance);
         }
       }
-      
-      this.renderer.cleanupComponentListeners(instance);
-      
-      // Call component's own destroy method for internal cleanup
+
+      // Component's own destroy() removes delegated/manual listeners and clears
+      // its container (single source of teardown).
       if (typeof instance.destroy === 'function') {
         instance.destroy();
       }
-      
-      // Remove from DOM
+
+      // Remove the wrapper element from the DOM
       if (instance.element) {
         instance.element.remove();
       }
-      
+
       // Remove from active components
       this.activeComponents.delete(componentId);
       

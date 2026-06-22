@@ -1,32 +1,42 @@
 # 🔥 VanillaForge
 
-**A modern, zero-dependency JavaScript framework for building sophisticated Single Page Applications**
+**A small, zero-dependency JavaScript framework for building Single Page Applications with plain web standards.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![ES Modules](https://img.shields.io/badge/ES-Modules-blue.svg)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
-[![Framework](https://img.shields.io/badge/Framework-Vanilla%20JS-orange.svg)](https://vanillajs.org/)
+[![Tests](https://img.shields.io/badge/tests-vitest-success.svg)](#testing)
 
-VanillaForge gives you all the power of modern frameworks—components, routing, state management, and more—built entirely with vanilla JavaScript. No dependencies, no build complexity, just pure web standards.
+VanillaForge gives you components, client-side routing, and an event bus in a
+few small ES modules — no dependencies and no required build step. It runs
+straight from `src/` in the browser; the build is only for producing an
+optimized bundle.
 
-## ✨ Why VanillaForge?
+## Why VanillaForge?
 
-- 🚀 **Zero Dependencies** - No npm hell, security vulnerabilities, or breaking changes
-- ⚡ **Lightweight** - < 50KB total, loads instantly
-- 🏗️ **Component-Based** - Modular, reusable UI components
-- 🛣️ **Full Routing** - SPA routing with history API
-- 📡 **Event System** - Centralized communication
-- 🔧 **Modern JS** - ES2020+, Web APIs, ES Modules
-- 🌐 **GitHub Pages Ready** - Deploy instantly with zero configuration
+- **Zero runtime dependencies** — ships as plain ES modules.
+- **Small** — the core is ~14.5 KB min+gzip (~48 KB minified).
+- **Component-based** — class components with lifecycle hooks and local state.
+- **Efficient updates** — re-renders are applied with a tiny DOM-morphing diff,
+  so only changed nodes are touched and focused inputs keep their cursor (see
+  [How rendering works](#how-rendering-works)).
+- **Client-side routing** — history API, route params (`/users/:id`), and a
+  configurable fallback route.
+- **Declarative events** — wire DOM events to methods with `data-*` attributes;
+  the framework handles delegation and cleanup.
 
-## 🚀 Quick Start
+## Quick Start
 
 ```bash
-# Get VanillaForge
-git clone https://github.com/Musyoka2020-eng/vanillaforge.git
+git clone https://github.com/Steve-GitCodex/vanillaforge.git
 cd vanillaforge
+npm install
 
-# Start building
+# Run the demo (builds to dist/ and serves it)
 npm run dev
+
+# Or run an example directly (no build needed)
+npm run example          # Todo app
+npm run example:router   # Routing + params demo
 ```
 
 **Your first component:**
@@ -38,74 +48,135 @@ class HelloWorld extends BaseComponent {
     constructor(eventBus, props = {}) {
         super(eventBus, props);
         this.name = 'hello-world';
+        this.state = { count: 0 };
     }
-    
+
     getTemplate() {
         return `
             <div class="hello">
                 <h1>Hello, VanillaForge! 🔥</h1>
-                <p>Building SPAs the vanilla way.</p>
+                <p>Clicked ${this.state.count} times.</p>
+                <button data-action="inc">Click me</button>
             </div>
         `;
     }
+
+    getMethods() {
+        return { inc: () => this.setState({ count: this.state.count + 1 }) };
+    }
 }
 
-// Create app and go!
 const app = createApp({ debug: true });
-await app.initialize({
-    routes: { '/': HelloWorld }
-});
+await app.initialize({ routes: { '/': HelloWorld } });
 await app.start();
 ```
 
-## 📚 Learn More
+The page needs a mount element (default id `main-content`, configurable via
+`createApp({ mountId })`):
 
-**Ready to dive deeper?** Check out our comprehensive documentation:
+```html
+<div id="main-content"></div>
+<script type="module" src="./app.js"></script>
+```
 
-- 📖 **[Full Documentation](docs/README.md)** - Complete guide and tutorials
-- 🧩 **[Components Guide](docs/components.md)** - Build reusable UI components  
-- 🛣️ **[Routing System](docs/router.md)** - SPA navigation and routing
-- 📡 **[Event Bus](docs/event-bus.md)** - Component communication
-- 🔧 **[API Reference](docs/API.md)** - Complete API documentation
-- 🏗️ **[Build System](docs/build-system.md)** - Production builds
-- 🌐 **[GitHub Pages](docs/github-pages.md)** - Deploy to GitHub Pages
+## How rendering works
 
-**Examples:**
-- 📝 **[Todo App](examples/todo-app/)** - Complete working example
+Calling `setState()` re-runs your `getTemplate()` and **morphs** the result onto
+the live DOM instead of replacing `innerHTML`. The morph:
 
-## 🛠️ Browser Support
+- patches only attributes/text/nodes that actually changed;
+- preserves the focus and caret/selection of a focused input, so typing is never
+  interrupted by a re-render;
+- reconciles lists by `data-key`, so reordering or removing an item reuses the
+  existing DOM nodes instead of rebuilding the list.
 
-**Modern browsers with ES2020+ support:**
-- Chrome 80+ | Firefox 72+ | Safari 14+ | Edge 80+
+```javascript
+getTemplate() {
+    return `<ul>${this.state.items
+        .map((it) => `<li data-key="${it.id}">${it.label}</li>`)
+        .join('')}</ul>`;
+}
+```
 
-## 🤝 Contributing
+> Note: a full re-render still re-runs the whole template (then diffs it). Moving
+> to fine-grained, signal-based updates is on the [roadmap](#roadmap).
 
-We welcome contributions! Please see our [Contributing Guide](docs/README.md#contributing) for details.
+## Declarative events
 
-## 📄 License
+Bind DOM events to `getMethods()` entries with attributes. Each attribute maps to
+exactly one event so a handler fires once:
 
-MIT License - see [LICENSE](LICENSE) file for details.
+| Attribute      | Fires on  | Typical use                 |
+| -------------- | --------- | --------------------------- |
+| `data-action`  | `click`   | buttons, links              |
+| `data-change`  | `change`  | checkboxes, radios, selects |
+| `data-input`   | `input`   | text inputs, textareas      |
+| `data-keydown` | `keydown` | keyboard shortcuts          |
+| `data-submit`  | `submit`  | forms                       |
 
-## 🌟 Support VanillaForge
+Handlers receive `(event, matchedElement)`. Listeners are delegated to the
+component's root element once and cleaned up automatically on destroy.
 
-- ⭐ **Star this repo** on GitHub
-- 🐛 **Report issues** and suggest features
-- 📖 **Improve docs** and add examples  
-- 💬 **Share your projects** built with VanillaForge
+## Examples
+
+- [Todo App](examples/todo-app/) — local state, filtering, keyed list, and
+  focus-preserving input. Run with `npm run example`.
+- [Routing demo](examples/router-app/) — a list view and a `/users/:id` detail
+  view driven by route params. Run with `npm run example:router`.
+
+## Testing
+
+Tests run on [Vitest](https://vitest.dev) with [happy-dom](https://github.com/capricorn86/happy-dom)
+(dev dependencies only — the framework itself stays dependency-free):
+
+```bash
+npm test
+```
+
+Coverage includes the DOM morph (focus/selection preservation, keyed lists), the
+component lifecycle and event delegation, the router, the event bus, and both
+examples.
+
+## Build
+
+```bash
+npm run build               # bundle src/app.js + CSS into dist/
+NODE_ENV=production npm run build   # minified bundle
+```
+
+The build uses [esbuild](https://esbuild.github.io/) to bundle and tree-shake,
+and copies/minifies discovered CSS. See [docs/build-system.md](docs/build-system.md).
+
+## Documentation
+
+- [Components Guide](docs/components.md)
+- [Routing System](docs/router.md)
+- [Event Bus](docs/event-bus.md)
+- [API Reference](docs/API.md)
+- [Build System](docs/build-system.md)
+- [GitHub Pages](docs/github-pages.md)
+
+## Browser Support
+
+Modern browsers with ES2020+ support: Chrome 80+, Firefox 72+, Safari 14+, Edge 80+.
+
+## Roadmap
+
+- **Fine-grained reactivity (signals)** — update only the exact bound nodes
+  without re-running the whole template. Today's morph-based rendering is the
+  stepping stone.
+- TypeScript type definitions.
+- A published npm package.
+
+## Contributing
+
+Issues and pull requests are welcome. Please run `npm test` and `npm run lint`
+before opening a PR.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
 
 ---
 
-## 👨‍💻 Author
-
-**Stephen Musyoka** - *Creator of VanillaForge*
-
-*"Forging the future of vanilla JavaScript development, one component at a time."*
-
-🔗 **Links:**
-- [GitHub Repository](https://github.com/Musyoka2020-eng/vanillaforge)
-- [Issue Tracker](https://github.com/Musyoka2020-eng/vanillaforge/issues)
-- [Full Documentation](docs/README.md)
-
----
-
-**Ready to forge something amazing? 🔥**
+**Author:** Stephen Musyoka · [GitHub](https://github.com/Steve-GitCodex/vanillaforge) · [Issues](https://github.com/Steve-GitCodex/vanillaforge/issues)

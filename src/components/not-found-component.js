@@ -47,24 +47,20 @@ export class NotFoundComponent extends BaseComponent {
    */
   getTemplate() {
     return `
-      <div class="not-found-container">
-        <div class="not-found-content">
-          <div class="not-found-icon">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="120" height="120">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+      <div class="nf">
+        <div class="nf-content">
+          <span class="nf-icon">
+            <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"/>
+              <path d="m20 20-3.2-3.2M9 11h4"/>
             </svg>
-          </div>
-          <h1 class="not-found-title">404 - Page Not Found</h1>
-          <p class="not-found-message">
-            The page you're looking for doesn't exist or has been moved.
-          </p>
-          <div class="not-found-actions">
-            <button class="btn btn-primary" data-action="goHome">
-              Go Home
-            </button>
-            <button class="btn btn-secondary" data-action="goBack">
-              Go Back
-            </button>
+          </span>
+          <p class="nf-code">404</p>
+          <h1 class="nf-title">Page not found</h1>
+          <p class="nf-message">The page you're looking for doesn't exist or has moved.</p>
+          <div class="nf-actions">
+            <button class="nf-btn nf-btn-accent" data-action="goHome">Go home</button>
+            <button class="nf-btn nf-btn-ghost" data-action="goBack">Go back</button>
           </div>
         </div>
       </div>

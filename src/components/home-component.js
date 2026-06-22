@@ -39,102 +39,137 @@ export class HomeComponent extends BaseComponent {
    */
   getTemplate() {
     return `
-      <div class="home-container">
-        <div class="home-content">
-          <div class="hero-section">
-            <h1 class="hero-title">🔥 ${this.state.message}</h1>
-            <p class="hero-subtitle">
-              A modern, lightweight framework for forging Single Page Applications with vanilla JavaScript.
-            </p>
-            <div class="hero-features">
-              <div class="feature">
-                <span class="feature-icon">🏗️</span>
-                <span>Component-Based Architecture</span>
-              </div>
-              <div class="feature">
-                <span class="feature-icon">🛣️</span>
-                <span>Client-Side Routing</span>
-              </div>
-              <div class="feature">
-                <span class="feature-icon">📡</span>
-                <span>Event-Driven Communication</span>
-              </div>
-              <div class="feature">
-                <span class="feature-icon">⚡</span>
-                <span>Zero Dependencies</span>
-              </div>
-            </div>
-          </div>
-            <div class="demo-section">
-            <h2>🎮 Interactive Demo</h2>
-            <div class="counter-demo">
-              <div class="counter-display">
-                <div class="counter-value">${this.state.counter}</div>
-                <div class="counter-label">Counter Value</div>
-                ${this.state.lastUpdated ? `<div class="last-updated">Last updated: ${new Date(this.state.lastUpdated).toLocaleTimeString()}</div>` : ''}
-              </div>
-              
-              <div class="counter-buttons">
-                <button class="btn btn-primary" data-action="increment">➕ Increment</button>
-                <button class="btn btn-secondary" data-action="decrement">➖ Decrement</button>
-                <button class="btn btn-outline" data-action="reset">🔄 Reset</button>
-              </div>
+      <div class="vf-home">
+        <header class="vf-nav">
+          <a class="vf-brand" href="/">
+            ${this.flameIcon()}
+            <span>VanillaForge</span>
+          </a>
+          <nav class="vf-nav-links">
+            <span class="vf-version">v1.0</span>
+            <a href="https://github.com/Steve-GitCodex/vanillaforge" target="_blank" rel="noopener">GitHub</a>
+          </nav>
+        </header>
 
-              <div class="demo-actions">
-                <button class="btn btn-info" data-action="testPerformance">📊 Test Performance</button>
-                <button class="btn btn-success" data-action="showAlert">🎉 Show Alert</button>
-              </div>
-              
-              ${this.state.performanceMetrics ? `
-                <div class="performance-metrics">
-                  <h4>Performance Metrics</h4>
-                  <div class="metrics-grid">
-                    <div class="metric">
-                      <span class="metric-label">Render Time:</span>
-                      <span class="metric-value">${this.state.performanceMetrics.renderTime}ms</span>
-                    </div>
-                    <div class="metric">
-                      <span class="metric-label">Memory Used:</span>
-                      <span class="metric-value">${this.state.performanceMetrics.memoryUsed}MB</span>
-                    </div>
-                  </div>
-                </div>
-              ` : ''}
-            </div>
-            
-            <div class="status-indicator ${this.state.isLoading ? 'loading' : 'ready'}">
-              <div class="status-icon">${this.state.isLoading ? '⏳' : '✅'}</div>
-              <div class="status-text">${this.state.isLoading ? 'Loading...' : 'Ready'}</div>
-            </div>
+        <section class="vf-hero">
+          <p class="vf-eyebrow">Zero dependencies &middot; ~14.5 KB gzipped</p>
+          <h1>Build SPAs with<br><span class="vf-accent">plain web standards.</span></h1>
+          <p class="vf-lede">
+            A small, dependency-free JavaScript framework. Components, client-side
+            routing, and an event bus &mdash; with focus-preserving reactive rendering
+            and no required build step.
+          </p>
+          <div class="vf-cta">
+            <a class="vf-btn vf-btn-accent" href="#start">Get started</a>
+            <a class="vf-btn vf-btn-ghost" href="https://github.com/Steve-GitCodex/vanillaforge" target="_blank" rel="noopener">View source</a>
           </div>
-          
-          <div class="info-section">
-            <h2>Getting Started</h2>
-            <div class="code-example">
-              <pre><code>import { createApp, BaseComponent } from './src/framework.js';
+        </section>
+
+        <section class="vf-features">
+          ${this.featureCard(this.iconComponents(), 'Component-based', 'Class components with lifecycle hooks and local state.')}
+          ${this.featureCard(this.iconRouting(), 'Client-side routing', 'History-API routes with params and a fallback route.')}
+          ${this.featureCard(this.iconEvents(), 'Event-driven', 'A pub/sub event bus for decoupled communication.')}
+          ${this.featureCard(this.iconReactive(), 'Reactive rendering', 'DOM morphing patches only what changed and keeps input focus.')}
+        </section>
+
+        <section class="vf-panel">
+          <div class="vf-panel-head">
+            <h2>Live reactivity</h2>
+            <p>State updates re-render through a DOM morph &mdash; only changed nodes are touched.</p>
+          </div>
+
+          <div class="vf-counter">
+            <div class="vf-counter-value">${this.state.counter}</div>
+            <div class="vf-counter-actions">
+              <button class="vf-btn vf-btn-line" data-action="decrement" aria-label="Decrement">&minus;</button>
+              <button class="vf-btn vf-btn-line" data-action="reset">Reset</button>
+              <button class="vf-btn vf-btn-line" data-action="increment" aria-label="Increment">+</button>
+            </div>
+            ${this.state.lastUpdated ? `<p class="vf-counter-meta">Updated ${new Date(this.state.lastUpdated).toLocaleTimeString()}</p>` : `<p class="vf-counter-meta">Use the controls to update state</p>`}
+          </div>
+
+          <div class="vf-measure">
+            <button class="vf-link" data-action="testPerformance">${this.state.isLoading ? 'Measuring…' : 'Measure render performance'}</button>
+            ${this.state.performanceMetrics ? `
+              <dl class="vf-stats">
+                <div><dt>Render time</dt><dd>${this.state.performanceMetrics.renderTime} ms</dd></div>
+                <div><dt>Memory</dt><dd>${this.state.performanceMetrics.memoryUsed} MB</dd></div>
+              </dl>
+            ` : ''}
+          </div>
+        </section>
+
+        <section class="vf-panel" id="start">
+          <div class="vf-panel-head">
+            <h2>Getting started</h2>
+            <p>Import the framework and register a route. No build step required.</p>
+          </div>
+          <div class="vf-code">
+            <div class="vf-code-bar">
+              <span></span><span></span><span></span>
+              <em>app.js</em>
+            </div>
+            <pre><code>import { createApp, BaseComponent } from './src/framework.js';
 
 class MyComponent extends BaseComponent {
-    constructor(eventBus, props) {
-        super(eventBus, props);
-        this.name = 'my-component';
-    }
-    
-    getTemplate() {
-        return \`&lt;div&gt;Hello VanillaForge!&lt;/div&gt;\`;
-    }
+  constructor(eventBus, props) {
+    super(eventBus, props);
+    this.name = 'my-component';
+    this.state = { count: 0 };
+  }
+
+  getTemplate() {
+    return \`&lt;button data-action="inc"&gt;Count: \${this.state.count}&lt;/button&gt;\`;
+  }
+
+  getMethods() {
+    return { inc: () =&gt; this.setState({ count: this.state.count + 1 }) };
+  }
 }
 
-const app = createApp({ debug: true });
-await app.initialize({
-    routes: { '/': MyComponent },
-    components: { 'my-component': MyComponent }
-});
+const app = createApp();
+await app.initialize({ routes: { '/': MyComponent } });
 await app.start();</code></pre>
-            </div>
           </div>
-        </div>
+        </section>
+
+        <footer class="vf-footer">
+          <span>VanillaForge &middot; MIT License</span>
+          <a href="https://github.com/Steve-GitCodex/vanillaforge" target="_blank" rel="noopener">github.com/Steve-GitCodex/vanillaforge</a>
+        </footer>
       </div>
     `;
+  }
+
+  /**
+   * Render a feature card with an inline SVG icon.
+   * @private
+   */
+  featureCard(icon, title, body) {
+    return `
+      <article class="vf-feature">
+        <span class="vf-feature-icon">${icon}</span>
+        <h3>${title}</h3>
+        <p>${body}</p>
+      </article>`;
+  }
+
+  // --- Inline line-art icons (no emoji) -------------------------------------
+
+  flameIcon() {
+    return `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2c1 3 4 4.5 4 8a4 4 0 0 1-8 0c0-1.2.5-2.2 1-3 .3 1 .8 1.5 1.5 1.8C10 7 11 4.5 12 2Z"/><path d="M8.5 14a3.5 3.5 0 0 0 7 0"/></svg>`;
+  }
+  iconComponents() {
+    return `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>`;
+  }
+  iconRouting() {
+    return `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8.5 16 16 8M6 15.5V12a4 4 0 0 1 4-4h4"/></svg>`;
+  }
+  iconEvents() {
+    return `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="2"/><path d="M7.8 7.8a6 6 0 0 0 0 8.4M16.2 16.2a6 6 0 0 0 0-8.4M5 5a9.5 9.5 0 0 0 0 14M19 19a9.5 9.5 0 0 0 0-14"/></svg>`;
+  }
+  iconReactive() {
+    return `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v4h-4"/></svg>`;
   }
 
   /**
@@ -147,7 +182,6 @@ await app.start();</code></pre>
       decrement: () => this.decrement(),
       reset: () => this.reset(),
       testPerformance: () => this.testPerformance(),
-      showAlert: () => this.showAlert(),
     };
   }
 
@@ -197,23 +231,6 @@ await app.start();</code></pre>
         }
       });
     }, 1000);
-  }
-  
-  async showAlert() {
-    try {
-      // Import SweetAlert dynamically
-      const { SweetAlert } = await import('../utils/sweet-alert.js');
-      
-      await SweetAlert.fire({
-        title: '🎉 VanillaForge!',
-        text: 'This alert was triggered using the VanillaForge SweetAlert utility!',
-        icon: 'success',
-        confirmButtonText: 'Awesome!'
-      });
-    } catch (error) {
-      // Fallback to regular alert
-      alert('🎉 VanillaForge!\nThis is a fallback alert.');
-    }
   }
   
   /**

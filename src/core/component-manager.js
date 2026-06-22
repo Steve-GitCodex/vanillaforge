@@ -92,7 +92,7 @@ export class ComponentManager {
    * @param {string} containerId - ID of container element
    * @returns {Promise<Object>} Component instance
    */
-  async loadComponent(componentName, props = {}, containerId = 'main-content') {
+  async loadComponent(componentName, props = {}, containerId = this.mountId) {
     const ComponentClass = this.components.get(componentName);
     if (!ComponentClass) {
       const error = new Error(`Component not registered: ${componentName}`);
@@ -226,10 +226,10 @@ export class ComponentManager {
       try {
         if (typeof component === 'string') {
           // Component name - load by name
-          await this.loadComponent(component, { route }, 'main-content');
+          await this.loadComponent(component, { route }, this.mountId);
         } else if (typeof component === 'function') {
           // Component class - load directly
-          await this.loadComponentClass(component, { route }, 'main-content');
+          await this.loadComponentClass(component, { route }, this.mountId);
         } else {
           throw new Error(`Invalid component type: ${typeof component}`);
         }

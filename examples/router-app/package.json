@@ -4,7 +4,7 @@
   "description": "Client-side routing example (lists + route params) built with VanillaForge",
   "main": "index.html",
   "scripts": {
-    "dev": "npx http-server . -p 3002 -c-1 --cors",
+    "dev": "npx http-server ../../ -p 3002 -c-1 --cors -o /examples/router-app/",
     "start": "npm run dev"
   },
   "keywords": ["vanillaforge", "router", "spa", "example"],

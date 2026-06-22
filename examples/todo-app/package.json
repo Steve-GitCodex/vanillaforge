@@ -4,7 +4,7 @@
   "description": "Todo app example built with VanillaForge framework",
   "main": "index.html",
   "scripts": {
-    "dev": "npx http-server . -p 3001 -c-1 --cors",
+    "dev": "npx http-server ../../ -p 3001 -c-1 --cors -o /examples/todo-app/",
     "start": "npm run dev"
   },
   "dependencies": {},

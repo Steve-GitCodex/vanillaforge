@@ -437,14 +437,18 @@ export class Router {
    * @private
    */
   resolvePathFromBase(path) {
-    if (!this.basePath) return path;
-    
-    if (path.startsWith(this.basePath)) {
-      const resolved = path.slice(this.basePath.length) || '/';
-      return resolved.startsWith('/') ? resolved : '/' + resolved;
+    let resolved = path;
+
+    if (this.basePath && resolved.startsWith(this.basePath)) {
+      resolved = resolved.slice(this.basePath.length) || '/';
     }
-    
-    return path;
+
+    // Treat a trailing directory entry file (index.html) as the root of its
+    // directory, so serving from a subfolder still matches the '/' route.
+    resolved = resolved.replace(/\/?index\.html?$/i, '/');
+
+    if (!resolved.startsWith('/')) resolved = '/' + resolved;
+    return resolved;
   }
 
   /**

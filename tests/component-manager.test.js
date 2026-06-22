@@ -63,4 +63,16 @@ describe('ComponentManager', () => {
     await m.loadComponentClass(Hello);
     expect(document.getElementById('app-root').querySelectorAll('h1')).toHaveLength(1);
   });
+
+  it('router:load-component loads into the configured mountId (not a hardcoded id)', async () => {
+    document.body.innerHTML = '<div id="app"></div>';
+    const bus = new EventBus();
+    const m = new ComponentManager(bus, undefined, undefined, { mountId: 'app' });
+    m.setupEventListeners();
+
+    bus.emit('router:load-component', { component: Hello, route: {} });
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(document.getElementById('app').querySelectorAll('h1')).toHaveLength(1);
+  });
 });

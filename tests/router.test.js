@@ -29,6 +29,25 @@ describe('Router.matchesRoute', () => {
   });
 });
 
+describe('Router.resolvePathFromBase', () => {
+  it('passes through paths when no base path is set', () => {
+    const r = makeRouter();
+    expect(r.resolvePathFromBase('/users/1')).toBe('/users/1');
+  });
+
+  it('strips a configured base path', () => {
+    const r = makeRouter({ basePath: '/examples/todo-app' });
+    expect(r.resolvePathFromBase('/examples/todo-app/')).toBe('/');
+    expect(r.resolvePathFromBase('/examples/todo-app/todos')).toBe('/todos');
+  });
+
+  it('treats a trailing index.html as the directory root', () => {
+    expect(makeRouter().resolvePathFromBase('/index.html')).toBe('/');
+    const r = makeRouter({ basePath: '/examples/todo-app' });
+    expect(r.resolvePathFromBase('/examples/todo-app/index.html')).toBe('/');
+  });
+});
+
 describe('Router navigation', () => {
   beforeEach(() => {
     window.history.replaceState(null, '', '/');

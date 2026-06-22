@@ -55,7 +55,17 @@
         import { UsersList } from './components/users-list.js';
         import { UserDetail } from './components/user-detail.js';
 
-        const app = createApp({ appName: 'VanillaForge Router Example', debug: true });
+        // Derive the base path from wherever this page is served (e.g.
+        // "/examples/router-app") so history-mode routes resolve correctly.
+        const basePath = window.location.pathname
+            .replace(/\/[^/]*\.[^/]*$/, '') // drop a trailing file (index.html)
+            .replace(/\/$/, '');            // drop trailing slash
+
+        const app = createApp({
+            appName: 'VanillaForge Router Example',
+            router: { basePath },
+            debug: true,
+        });
 
         await app.initialize({
             routes: {

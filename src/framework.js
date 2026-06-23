@@ -35,6 +35,9 @@ export { PerformanceUtils, performanceUtils } from './utils/performance.js';
 export { perf, cache } from './utils/decorators.js';
 export { optimizeImage, batchDOMOperations } from './utils/dom.js';
 
+// Core reactive primitive
+export { Signal } from './core/signal.js';
+
 // First-party plugins
 export { iconsPlugin } from './plugins/icons/icons-plugin.js';
 export { themePlugin } from './plugins/theme/theme-plugin.js';

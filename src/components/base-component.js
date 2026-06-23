@@ -20,6 +20,7 @@ import { EventBus } from '../core/event-bus.js';
 import { Logger } from '../utils/logger.js';
 import { ErrorHandler } from '../utils/error-handler.js';
 import { morph } from '../core/dom-morph.js';
+import { Signal } from '../core/signal.js';
 
 /**
  * Base Component Class
@@ -76,6 +77,10 @@ export class BaseComponent {
         this._children = new Map();
         this._childSpecs = [];
         this._childIndex = 0;
+
+        // Signals: reactive primitives created by this.signal()
+        this._signals = [];
+        this._signalRenderPending = false;
 
         // Set by the framework (ComponentManager / parent component) so child()
         // calls can look up sibling components by registered name.
@@ -444,8 +449,43 @@ export class BaseComponent {
     }
 
     /**
+     * Create a reactive signal linked to this component.
+     *
+     * When signal.set(newValue) is called, the component re-renders via the
+     * existing DOM morph. Multiple .set() calls within the same synchronous
+     * block are batched into a single render (scheduled as a microtask).
+     *
+     * The signal is automatically destroyed when the component is destroyed.
+     *
+     * @param {*} initialValue
+     * @returns {Signal}
+     */
+    signal(initialValue) {
+        const sig = new Signal(initialValue)._link(this);
+        this._signals.push(sig);
+        return sig;
+    }
+
+    /**
+     * Schedule one morph re-render in the next microtask.
+     * Idempotent: calling it multiple times before the microtask fires
+     * results in exactly one render.
+     * @private
+     */
+    _scheduleSignalRender() {
+        if (this._signalRenderPending) return;
+        this._signalRenderPending = true;
+        Promise.resolve().then(() => {
+            this._signalRenderPending = false;
+            if (this.isRendered && !this.isDestroyed) {
+                this.render();
+            }
+        });
+    }
+
+    /**
      * Find elements within the component container
-     * 
+     *
      * @param {string} selector - CSS selector
      * @returns {HTMLElement|null} First matching element
      */
@@ -878,4 +918,9 @@ export class BaseComponent {
             }
         }
         this.eventBusSubscriptions = [];
+
+        // Destroy signals so pending renders and subscriber refs are released.
+        for (const sig of this._signals) sig._destroy();
+        this._signals = [];
+        this._signalRenderPending = false;
     }}

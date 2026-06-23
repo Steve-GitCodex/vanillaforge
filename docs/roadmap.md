@@ -80,6 +80,21 @@ Every item below plugs into the **plugin/service registry** added in v1.1. See
 
 ---
 
+## Done (v1.6)
+
+### Signals / fine-grained reactivity
+- `this.signal(initialValue)` — creates a `Signal` linked to the component.
+- `signal.value` — read the current value in `getTemplate()`.
+- `signal.set(newValue)` — updates the value and schedules a single morph re-render via
+  microtask batching (multiple `.set()` calls in the same synchronous block → one render).
+- `signal.subscribe(fn)` — returns an unsubscribe function; works standalone, no component needed.
+- `Object.is` equality check — identical values are ignored, no unnecessary renders.
+- Auto-cleanup: all signals destroyed when their component is destroyed, preventing memory leaks.
+- `Signal` class exported from `src/framework.js` for standalone use.
+- Full TypeScript generic type `Signal<T>` in `types/index.d.ts`.
+
+---
+
 ## Done (v1.5)
 
 ### Scaffold CLI + TypeScript types
@@ -93,30 +108,9 @@ Every item below plugs into the **plugin/service registry** added in v1.1. See
 
 ---
 
-## Next: core engine upgrades
-
 ## Later: core engine upgrades
 
-### 4. Signals / fine-grained reactivity
-
-**Why:** Currently `setState()` re-renders the whole component template then morphs. For complex
-components this is wasteful. Signals would let only the parts of the DOM that depend on a changed
-value update directly.
-
-**Shape of the API:**
-```js
-const count = this.signal(0);
-// In template: ${count.value}
-// In method:   count.set(count.value + 1) // -> only the text node updates
-```
-
-**Where it plugs in:** The morph is already the single render chokepoint. Signals slot in by
-bypassing the template-string step and writing patches directly to the DOM. `src/core/dom-morph.js`
-already notes this in its header comment.
-
----
-
-### 5. Data loading + shared state
+### 1. Data loading + shared state
 
 **Why:** Real apps need async data (route loaders) and state shared across components (a store).
 

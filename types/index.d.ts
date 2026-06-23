@@ -13,6 +13,38 @@
  */
 
 // ---------------------------------------------------------------------------
+// Signal — reactive primitive
+// ---------------------------------------------------------------------------
+
+/**
+ * A reactive value. Reading `.value` returns the current value; calling
+ * `.set(newValue)` updates it, notifies all subscribers, and (when the
+ * signal was created via `this.signal()` inside a component) schedules a
+ * single batched morph re-render for the next microtask.
+ *
+ * Multiple `.set()` calls within the same synchronous block collapse into
+ * one render.
+ */
+export declare class Signal<T = unknown> {
+  constructor(initialValue: T);
+
+  /** The current value. */
+  readonly value: T;
+
+  /**
+   * Update the value. Identical values (via Object.is) are ignored.
+   * Notifies subscribers and schedules a component re-render.
+   */
+  set(newValue: T): void;
+
+  /**
+   * Subscribe to value changes.
+   * Returns an unsubscribe function.
+   */
+  subscribe(fn: (value: T) => void): () => void;
+}
+
+// ---------------------------------------------------------------------------
 // Shared primitives
 // ---------------------------------------------------------------------------
 
@@ -181,6 +213,14 @@ export declare class BaseComponent {
     props?: AnyRecord,
     key?: string | number
   ): string;
+
+  /**
+   * Create a reactive signal linked to this component. When
+   * `signal.set(newValue)` is called, the component re-renders via the DOM
+   * morph (multiple calls in the same tick are batched into one render).
+   * The signal is automatically destroyed when the component is destroyed.
+   */
+  signal<T>(initialValue: T): Signal<T>;
 
   /** Emit an event on the shared EventBus. */
   emit(event: string, data?: unknown): void;

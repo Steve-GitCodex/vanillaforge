@@ -158,7 +158,7 @@ export class Router {
    * @param {PopStateEvent} event - Pop state event
    * @private
    */
-  async handlePopState(event) {
+  async handlePopState(_event) {
     const path = window.location.pathname;
     const resolvedPath = this.resolvePathFromBase(path);
     await this.navigateTo(resolvedPath, { fromPopState: true });

@@ -9,15 +9,15 @@
  * Base class for storage adapters
  */
 class StorageAdapter {
-  getItem(key) {
+  getItem(_key) {
     throw new Error('Not implemented');
   }
 
-  setItem(key, value) {
+  setItem(_key, _value) {
     throw new Error('Not implemented');
   }
 
-  removeItem(key) {
+  removeItem(_key) {
     throw new Error('Not implemented');
   }
 
@@ -48,14 +48,17 @@ class StorageAdapter {
  */
 export class LocalStorageAdapter extends StorageAdapter {
   getItem(key) {
+    if (typeof localStorage === 'undefined') return null;
     return localStorage.getItem(key);
   }
 
   setItem(key, value) {
+    if (typeof localStorage === 'undefined') return;
     localStorage.setItem(key, value);
   }
 
   removeItem(key) {
+    if (typeof localStorage === 'undefined') return;
     localStorage.removeItem(key);
   }
 }

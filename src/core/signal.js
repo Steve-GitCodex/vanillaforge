@@ -70,7 +70,6 @@ export class Signal {
         fn(newValue);
       } catch (err) {
         // Subscriber errors must not prevent other subscribers from running.
-        // eslint-disable-next-line no-console
         console.error('[Signal] subscriber error', err);
       }
     }

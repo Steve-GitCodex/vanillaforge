@@ -16,7 +16,6 @@
  * @since 2025-06-15
  */
 
-import { EventBus } from '../core/event-bus.js';
 import { Logger } from '../utils/logger.js';
 import { ErrorHandler } from '../utils/error-handler.js';
 import { morph } from '../core/dom-morph.js';
@@ -573,7 +572,7 @@ export class BaseComponent {
                 await this.loadCSS(cssPath);
                 this.logger.debug(`Auto-loaded CSS: ${cssPath}`);
                 break; // Stop after first successful load
-            } catch (error) {
+            } catch (_e) {
                 // Continue to next path - this is expected behavior
                 continue;
             }

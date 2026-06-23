@@ -7,6 +7,183 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-06-23
+
+This release adds **route loaders** — async data-fetching that runs before a route
+component mounts, so the first render always has data available.
+
+### Added
+
+#### Route loaders (`src/core/router.js`)
+- `loader` option on a route config object — an async function called before the
+  component mounts.
+- Receives `{ params, path }` — the dynamic URL segments and the matched path.
+- Return value is passed to the component as `this.props.data` on the first render.
+- Loader errors are caught and logged; the component still mounts with
+  `props.data: undefined` so it can render a graceful fallback.
+- Fully backward-compatible — routes registered as a bare component class continue
+  to work unchanged.
+- TypeScript types: `RouteLoader`, `RouteLoaderContext`, and `RouteConfig.loader`
+  added to `types/index.d.ts`.
+- `FRAMEWORK_VERSION` bumped to `1.8.0`.
+
+#### Tests
+- `tests/router-loaders.test.js` — covers: loader called before mount, return value
+  in `props.data`, `params` and `path` passed to loader, loader error handling,
+  bare-class routes still work, multiple routes with independent loaders.
+
+#### Documentation
+- `docs/roadmap.md` — route loaders moved to "Done (v1.8)".
+- `docs/API.md` — "Route loaders" section with full usage example.
+
+---
+
+## [1.7.0] - 2026-06-23
+
+This release adds the **shared store plugin** — a reactive key/value store accessible
+from any component, no prop-drilling required.
+
+### Added
+
+#### Store plugin (`src/plugins/store/store-plugin.js`)
+- `storePlugin` — install with `app.use(storePlugin)`.
+- `StoreService.set(key, value)` — writes a value; `Object.is` equality check
+  means identical values are silently ignored.
+- `StoreService.get(key)` — returns the current value (`undefined` for unset keys).
+- `StoreService.subscribe(key, fn)` — per-key subscription; handler receives
+  `(value, prev)`; returns an unsubscribe function.
+- `StoreService.subscribeAll(fn)` — subscribes to all writes; handler receives
+  `(key, value, prev)`.
+- `StoreService.delete(key)` — removes a key and fires change events with
+  `value: undefined`.
+- `StoreService.keys()` — returns all stored key names.
+- Emits `'store:change'` and `'store:change:<key>'` on the shared EventBus so any
+  code can react without holding a service reference.
+- Exported from `src/framework.js` as `storePlugin` and `StoreService`.
+- Full TypeScript generics in `types/index.d.ts`.
+- `FRAMEWORK_VERSION` bumped to `1.7.0`.
+
+#### Tests
+- `tests/store.test.js` — covers: set/get round-trip, Object.is no-op, subscribe
+  per-key, unsubscribe, subscribeAll, delete fires events, keys(), EventBus events,
+  plugin registration, idempotency.
+
+#### Documentation
+- `docs/roadmap.md` — store plugin moved to "Done (v1.7)".
+- `docs/plugins.md` — full "Store plugin" section with cross-component cart example.
+- `docs/API.md` — `storePlugin` quick reference.
+
+---
+
+## [1.6.0] - 2026-06-23
+
+This release adds **signals** — fine-grained reactive primitives that batch updates
+and keep re-renders minimal without requiring `setState()`.
+
+### Added
+
+#### Signals (`src/core/signal.js`, `src/components/base-component.js`)
+- `Signal<T>` class — a reactive cell; reading `.value` returns the current value;
+  `.set(newValue)` updates it and notifies all subscribers.
+- `Object.is` equality check — identical values are ignored, no unnecessary renders.
+- `signal.subscribe(fn)` — returns an unsubscribe function; works standalone with no
+  component needed.
+- `this.signal(initialValue)` on `BaseComponent` — creates a `Signal` linked to the
+  component. Calling `.set()` schedules a single batched morph re-render via
+  microtask; multiple `.set()` calls in the same synchronous block collapse into one.
+- Auto-cleanup: signals created via `this.signal()` are destroyed when the
+  component is destroyed, preventing memory leaks.
+- `Signal` exported from `src/framework.js` for standalone use.
+- Full TypeScript generic `Signal<T>` in `types/index.d.ts`.
+- `FRAMEWORK_VERSION` bumped to `1.6.0`.
+
+#### Tests
+- `tests/signals.test.js` — covers: read/write, Object.is no-op, subscribe/
+  unsubscribe, batched rendering, component signal auto-cleanup on destroy,
+  standalone signal, multiple subscribers.
+
+#### Documentation
+- `docs/roadmap.md` — signals moved to "Done (v1.6)".
+- `docs/API.md` — "Signals" section with component and standalone examples.
+
+---
+
+## [1.5.0] - 2026-06-23
+
+This release adds the **scaffold CLI** and **TypeScript declaration file** so new
+projects can be created in one command and VS Code provides full type coverage.
+
+### Added
+
+#### Scaffold CLI (`create-vanillaforge/`)
+- `npx create-vanillaforge my-app` — interactive project scaffolder.
+- `--template=<name>` flag for non-interactive use.
+- Four templates:
+  - `minimal` — bare component + router, no plugins.
+  - `full` — all first-party plugins pre-installed.
+  - `todo-app` — fully-working Todo app matching the examples/ version.
+  - `router-app` — multi-route app with params and child components.
+- Each generated project uses a GitHub git dependency + import map; no build step
+  needed in development.
+- CLI package lives in `create-vanillaforge/` (monorepo style); entry point:
+  `create-vanillaforge/bin/cli.js`.
+- See `docs/cli.md` for the full CLI reference.
+
+#### TypeScript declarations (`types/index.d.ts`)
+- Full declaration file covering every exported symbol: `createApp`, `FrameworkApp`,
+  `BaseComponent`, `Router`, `EventBus`, `Signal`, all plugin classes
+  (`IconsService`, `ThemeService`, `AlertsService`, `FontsService`, `StoreService`),
+  all option interfaces, and all constants.
+- `package.json` updated: `"types": "types/index.d.ts"`, `"files"` array includes
+  `types/`, `"exports"` map includes the `"types"` condition.
+- VS Code picks up types automatically in JavaScript projects (no extra config
+  needed when importing from the package).
+- `FRAMEWORK_VERSION` bumped to `1.5.0`.
+
+#### Documentation
+- `docs/cli.md` — full CLI reference: usage, templates, flags, generated layout.
+- `docs/roadmap.md` — scaffold + types moved to "Done (v1.5)".
+
+---
+
+## [1.4.0] - 2026-06-22
+
+This release adds the **self-hosted fonts plugin** — Inter and JetBrains Mono bundled
+as Latin-subset variable-weight woff2 data URIs. Zero external requests, no Google
+Fonts, no file setup.
+
+### Added
+
+#### Fonts plugin (`src/plugins/fonts/`)
+- `fontsPlugin` — install with `app.use(fontsPlugin, { families: ['Inter', 'JetBrains Mono'] })`.
+- Inter and JetBrains Mono bundled as Latin-subset, variable-weight woff2 data
+  URIs — zero external requests, works out of the box.
+- Weight and style filtering: `{ name: 'Inter', weights: [400, 700], styles: ['normal'] }`.
+  For variable fonts `weights` is treated as a `[min, max]` range.
+- `path` option to serve your own font files instead of bundled data URIs.
+- Custom family registration via `FontsService.addFamily(name, manifest)` — returns
+  `this` for chaining.
+- Theme token integration: loading Inter updates `--vf-font-sans`; loading JetBrains
+  Mono updates `--vf-font-mono` (no-op when `themePlugin` is absent).
+- `FontsService.getFamilies()` — returns CSS family names of all loaded fonts.
+- Idempotent `<style id="vf-fonts">` element — reuses existing element rather than
+  duplicating it.
+- `display` option controls `font-display` (default: `'swap'`).
+- Exported from `src/framework.js` as `fontsPlugin` and `FontsService`.
+- `FRAMEWORK_VERSION` bumped to `1.4.0`.
+
+#### Tests
+- `tests/fonts.test.js` — covers: style element creation, Inter/JetBrains Mono
+  `@font-face` injection, weight range, style filtering, idempotency, `getFamilies()`,
+  theme token integration, custom path, `addFamily()`, `fontsPlugin` install.
+
+#### Documentation
+- `docs/roadmap.md` — fonts plugin moved to "Done (v1.4)".
+- `docs/plugins.md` — "Built-in fonts plugin" section with full option table and
+  `addFamily()` example.
+
+---
+
 ## [1.3.0] - 2026-06-22
 
 This release adds the **alerts plugin** — zero-dependency toasts and confirm dialogs.

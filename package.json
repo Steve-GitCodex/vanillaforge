@@ -1,6 +1,6 @@
 {
   "name": "vanillaforge",
-  "version": "1.0.0",
+  "version": "1.8.0",
   "description": "VanillaForge - A modern, lightweight vanilla JavaScript framework for forging Single Page Applications",
   "type": "module",
   "main": "src/framework.js",

@@ -62,7 +62,7 @@ export class ErrorHandler {  /**
       // Fallback for non-browser environments
       this.notification = {
         showToast: (message, type) => console.log(`[${type.toUpperCase()}] ${message}`),
-        showModal: (title, message, options) => console.log(`[MODAL] ${title}: ${message}`)
+        showModal: (title, message, _options) => console.log(`[MODAL] ${title}: ${message}`)
       };
     }
     
@@ -353,22 +353,16 @@ export class ErrorHandler {  /**
    * @param {Object} errorInfo - Error information
    */
   async reportError(errorInfo) {
+    if (typeof localStorage === 'undefined') return;
     try {
-      // This would integrate with error reporting services like Sentry
-      // For now, just store in localStorage
-      
       const reports = JSON.parse(localStorage.getItem('ucm_error_reports') || '[]');
       reports.push(errorInfo);
-      
-      // Keep only last 50 reports
       if (reports.length > 50) {
         reports.shift();
       }
-      
       localStorage.setItem('ucm_error_reports', JSON.stringify(reports));
-      
-    } catch (error) {
-      console.error('Failed to report error:', error);
+    } catch (_e) {
+      // Non-critical — storage quota exceeded or private mode.
     }
   }
 
@@ -400,7 +394,7 @@ export class ErrorHandler {  /**
         authenticated: false, // Would check actual auth state
         timestamp: new Date().toISOString()
       };
-    } catch (error) {
+    } catch (_e) {
       return { error: 'Failed to get user context' };
     }
   }
@@ -440,7 +434,9 @@ export class ErrorHandler {  /**
   clearErrorHistory() {
     this.errorCounts.clear();
     this.lastErrors = [];
-    localStorage.removeItem('ucm_error_reports');
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('ucm_error_reports');
+    }
     this.logger.info('Error history cleared');
   }
 }

@@ -319,5 +319,5 @@ export function createApp(config = {}) {
 }
 
 // Framework metadata
-export const FRAMEWORK_VERSION = '1.6.0';
+export const FRAMEWORK_VERSION = '1.8.0';
 export const FRAMEWORK_NAME = 'VanillaForge';

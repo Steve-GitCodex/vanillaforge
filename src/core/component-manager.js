@@ -229,14 +229,17 @@ export class ComponentManager {
         this.eventBus.emit('component:error', { error, componentName: name });
       }
     });    // Listen for router component load requests
-    this.eventBus.on('router:load-component', async ({ component, route }) => {
+    this.eventBus.on('router:load-component', async ({ component, route, loaderData }) => {
       try {
+        const props = loaderData !== undefined
+          ? { route, data: loaderData }
+          : { route };
         if (typeof component === 'string') {
           // Component name - load by name
-          await this.loadComponent(component, { route }, this.mountId);
+          await this.loadComponent(component, props, this.mountId);
         } else if (typeof component === 'function') {
           // Component class - load directly
-          await this.loadComponentClass(component, { route }, this.mountId);
+          await this.loadComponentClass(component, props, this.mountId);
         } else {
           throw new Error(`Invalid component type: ${typeof component}`);
         }

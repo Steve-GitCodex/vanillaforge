@@ -78,8 +78,8 @@ export interface AppConfig {
 }
 
 export interface InitOptions {
-  /** Map of URL path → component class for client-side routing. */
-  routes?: Record<string, ComponentClass>;
+  /** Map of URL path → component class or route config for client-side routing. */
+  routes?: Record<string, ComponentClass | RouteConfig>;
   /** Named component registry (for lookup by string in child()). */
   components?: Record<string, ComponentClass>;
 }
@@ -122,9 +122,45 @@ export interface RouteMatch {
   query: Record<string, string>;
 }
 
+/**
+ * Context object passed to a route loader function.
+ */
+export interface RouteLoaderContext {
+  /** Dynamic segments captured from the URL (e.g. `{ id: '42' }` for `/users/:id`). */
+  params: Record<string, string>;
+  /** The matched URL path (without base path). */
+  path: string;
+}
+
+/**
+ * Async function that fetches data before a route component mounts.
+ * Its return value is available as `this.props.data` inside the component.
+ */
+export type RouteLoader = (context: RouteLoaderContext) => Promise<unknown>;
+
+/**
+ * Full route configuration object accepted by `Router.addRoute()`.
+ * Pass a plain `ComponentClass` as a shorthand when no extra options are needed.
+ */
+export interface RouteConfig {
+  component: ComponentClass;
+  /**
+   * Called before the component mounts. Its return value is available as
+   * `this.props.data` on the first render. When the loader throws, the
+   * component still mounts with `props.data` set to `undefined`.
+   */
+  loader?: RouteLoader;
+  title?: string;
+  protected?: boolean;
+  beforeEnter?: (route: RouteMatch, path: string) => boolean | Promise<boolean>;
+  afterEnter?: (route: RouteMatch, path: string) => void | Promise<void>;
+}
+
 export declare class Router {
-  addRoute(path: string, component: ComponentClass, options?: AnyRecord): void;
+  addRoute(path: string, component: ComponentClass | RouteConfig): void;
   navigate(path: string, options?: AnyRecord): void;
+  beforeNavigation(callback: (route: RouteMatch, path: string) => boolean | Promise<boolean>): void;
+  afterNavigation(callback: (route: RouteMatch, path: string) => void | Promise<void>): void;
   initialize(): Promise<void>;
   start(): Promise<void>;
   cleanup(): Promise<void>;
@@ -257,7 +293,7 @@ export declare class FrameworkApp {
 
   /**
    * Retrieve a service by name. Returns null when not found.
-   * Common names: 'icons', 'theme', 'alerts', 'fonts', 'router', 'eventBus'.
+   * Common names: 'icons', 'theme', 'alerts', 'fonts', 'store', 'router', 'eventBus'.
    */
   get<T = unknown>(name: string): T | null;
 

@@ -15,13 +15,13 @@ optimized bundle.
 
 - **Zero runtime dependencies** — ships as plain ES modules.
 - **Small** — the core is ~14.5 KB min+gzip (~48 KB minified).
-- **Batteries-included (growing)** — built-in icons out of the box; CSS/theming
-  and alert systems are next. No Font Awesome, Bootstrap, or SweetAlert required
-  — but you can still bring them in if you want.
+- **Batteries-included** — icons, CSS/theming, alerts, self-hosted fonts, and a
+  shared reactive store, all built in. No Font Awesome, Bootstrap, SweetAlert, or
+  Google Fonts required — but you can still bring them in if you want.
 - **Component composition** — embed child components directly inside parent
   templates. Each child has isolated state, props, lifecycle, and event handling.
-- **Plugin system** — every subsystem (icons, theme, alerts) is a plugin you can
-  install, replace, or skip.
+- **Plugin system** — every subsystem (icons, theme, alerts, fonts, store) is a
+  plugin you can install, replace, or skip.
 - **Efficient updates** — re-renders are applied with a tiny DOM-morphing diff,
   so only changed nodes are touched and focused inputs keep their cursor (see
   [How rendering works](#how-rendering-works)).
@@ -176,14 +176,11 @@ Modern browsers with ES2020+ support: Chrome 80+, Firefox 72+, Safari 14+, Edge 
 
 ## Roadmap
 
-- **CSS / theming plugin** — design tokens + base styles; no Bootstrap or Tailwind needed.
-- **Alerts plugin** — fold the existing toast/modal system into the plugin pattern.
-- **Self-hosted fonts** — replace Google Fonts with a first-party fonts plugin.
-- **Fast onboarding** — scaffold CLI, starter templates, TypeScript types.
-- **Fine-grained reactivity (signals)** — update only exact bound nodes without
-  re-running the whole template.
-- **Data loading + shared store** — route loaders and a global state service.
-- **npm package** — when the public API is stable.
+All five built-in plugins (icons, theme, alerts, fonts, store), component
+composition, signals, route loaders, TypeScript types, and the scaffold CLI
+are shipped. What's next:
+
+- **npm publish** — stable `2.0.0` release to the npm registry.
 
 Full details in [docs/roadmap.md](docs/roadmap.md).
 

@@ -1,5 +1,4 @@
 import { BaseComponent } from 'vanillaforge';
-import { getUser } from '../data/users.js';
 
 export class UserDetail extends BaseComponent {
   constructor(eventBus, props = {}) {
@@ -8,8 +7,7 @@ export class UserDetail extends BaseComponent {
   }
 
   get user() {
-    const id = this.props.route?.params?.id;
-    return getUser(id);
+    return this.props.data ?? null;
   }
 
   getTemplate() {

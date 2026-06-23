@@ -110,6 +110,7 @@ export class Router {
       path,
       name: routeConfig.name || path.replace('/', '') || 'home',
       component: routeConfig.component,
+      loader: routeConfig.loader || null,
       protected: routeConfig.protected || false,
       requiredRole: routeConfig.requiredRole || null,
       title: routeConfig.title || 'VanillaForge App',
@@ -236,9 +237,19 @@ export class Router {
       this.currentRoute = { ...route, params };
       document.title = route.title || 'VanillaForge App';
 
+      let loaderData;
+      if (route.loader) {
+        try {
+          loaderData = await route.loader({ params, path });
+        } catch (err) {
+          this.logger.error('Route loader failed', err);
+        }
+      }
+
       this.eventBus.emit('router:load-component', {
         component: route.component,
         route: this.currentRoute,
+        loaderData,
       });
 
       await this.runAfterNavigationCallbacks(this.currentRoute, path);

@@ -27,7 +27,7 @@ No build step is required for development.
 | Name | Description |
 |---|---|
 | `minimal` | Counter app. No plugins. Best starting point for a blank project. |
-| `full` | Counter app with all four built-in plugins: icons, theme, alerts, fonts. |
+| `full` | Counter app with all five built-in plugins: icons, theme, alerts, fonts, store. |
 | `todo-app` | Task list with filtering, localStorage, and confirm-on-delete. |
 | `router-app` | Multi-page app: user list + detail view with routing and composition. |
 
@@ -39,7 +39,7 @@ Running without `--template` shows an interactive menu:
 Which template would you like to use?
 
   1)  Minimal      counter app, no plugins — best starting point
-  2)  Full         all plugins: icons, theme, alerts, fonts
+  2)  Full         all plugins: icons, theme, alerts, fonts, store
   3)  Todo App     task list with filtering and localStorage
   4)  Router App   multi-page app with routing and composition
 
@@ -74,9 +74,9 @@ my-app/
 my-app/
   index.html
   src/
-    app.js            createApp + all 4 plugins installed
+    app.js            createApp + all 5 plugins installed
     components/
-      home.js         HomeComponent demonstrating icons, theme classes, alerts
+      home.js         HomeComponent demonstrating icons, theme classes, alerts, store
   package.json
   .gitignore
 ```

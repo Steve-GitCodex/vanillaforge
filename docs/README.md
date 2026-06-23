@@ -7,7 +7,7 @@ Simple, zero-dependency JavaScript framework for building SPAs.
 - [API Reference](API.md) - Complete API guide with examples
 - [Components](components.md) - How to build components
 - [Composition](composition.md) - Nesting components inside other components
-- [Plugins](plugins.md) - Plugin system: icons, theme, alerts, fonts — and writing your own
+- [Plugins](plugins.md) - Plugin system: icons, theme, alerts, fonts, store — and writing your own
 - [CLI](cli.md) - Scaffold CLI (`npx create-vanillaforge`) and TypeScript types
 - [Routing](router.md) - URL routing and navigation
 - [Events](event-bus.md) - Component communication
@@ -50,11 +50,11 @@ await app.start();
 ## Key Features
 
 - **Zero dependencies** - No external libraries required
-- **Plugin system** - Built-in icons, CSS/theming, alerts, and self-hosted fonts
+- **Plugin system** - Built-in icons, CSS/theming, alerts, self-hosted fonts, and shared store
 - **Component composition** - Nest components inside other components
 - **Focus-preserving DOM morph** - Updates only what changed; no input flicker
 - **Declarative events** - `data-action`, `data-input`, `data-change` wiring
-- **Client routing** - SPA navigation with route params and guards
+- **Client routing** - SPA navigation with route params, guards, and async loaders
 - **Event bus** - Loose coupling between components
 - **Small bundle** - ~14.5 KB min+gzip
 

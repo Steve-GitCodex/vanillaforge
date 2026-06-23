@@ -4,6 +4,7 @@ import {
   themePlugin,
   alertsPlugin,
   fontsPlugin,
+  storePlugin,
 } from 'vanillaforge';
 import { HomeComponent } from './components/home.js';
 
@@ -15,10 +16,10 @@ app.use(themePlugin, {
 app.use(iconsPlugin);
 app.use(alertsPlugin);
 app.use(fontsPlugin, { families: ['Inter'] });
+app.use(storePlugin);
 
 await app.initialize({
   routes: { '/': HomeComponent },
-  components: { home: HomeComponent },
 });
 
 await app.start();

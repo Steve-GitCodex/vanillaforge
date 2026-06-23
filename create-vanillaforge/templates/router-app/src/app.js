@@ -1,6 +1,7 @@
 import { createApp, iconsPlugin, themePlugin, alertsPlugin } from 'vanillaforge';
 import { UsersList } from './components/users-list.js';
 import { UserDetail } from './components/user-detail.js';
+import { getUser } from './data/users.js';
 
 const basePath = window.location.pathname
   .replace(/\/[^/]*\.[^/]*$/, '')
@@ -18,7 +19,10 @@ app.use(alertsPlugin);
 await app.initialize({
   routes: {
     '/': UsersList,
-    '/users/:id': UserDetail,
+    '/users/:id': {
+      component: UserDetail,
+      loader: async ({ params }) => getUser(params.id),
+    },
   },
 });
 

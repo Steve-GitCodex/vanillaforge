@@ -25,7 +25,7 @@ const TEMPLATES = [
   {
     name: 'full',
     label: 'Full',
-    description: 'all plugins: icons, theme, alerts, fonts',
+    description: 'all plugins: icons, theme, alerts, fonts, store',
   },
   {
     name: 'todo-app',

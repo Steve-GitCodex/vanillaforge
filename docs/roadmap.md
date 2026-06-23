@@ -127,33 +127,39 @@ Every item below plugs into the **plugin/service registry** added in v1.1. See
 
 ---
 
-## Later: core engine upgrades
+## Done (v1.8)
 
-### 1. Route loaders
+### Route loaders
 
-**Why:** The store is done; the remaining async data piece is per-route loaders that let
-components receive pre-fetched data as props before their first render.
+- `loader` option on route config — an async function that runs before the component mounts.
+- Return value is available as `this.props.data` on the first render.
+- Loader receives `{ params, path }` — dynamic segments and the matched URL path.
+- Loader errors are caught and logged; the component still mounts with `props.data: undefined`.
+- Fully backward-compatible — routes registered as a bare class continue to work unchanged.
 
-**API:**
 ```js
-addRoute('/users', {
-  component: UsersListComponent,
-  loader: async ({ params }) => fetch('/api/users').then(r => r.json()),
-  // props.data is available in the component on first render
-})
-```
+app.initialize({
+  routes: {
+    '/users/:id': {
+      component: UserDetailComponent,
+      loader: async ({ params }) =>
+        fetch(`/api/users/${params.id}`).then(r => r.json()),
+    },
+  },
+});
 
-**Where it plugs in:** Loader support wired into `src/core/router.js`; the fetched value
-is merged into the component props as `props.data` before the component mounts.
+// In UserDetailComponent:
+getTemplate() {
+  const user = this.props.data;        // pre-fetched before first render
+  return `<h1>${user ? user.name : 'Loading...'}</h1>`;
+}
+```
 
 ---
 
-## Finally: packaging
+## Next: npm publish
 
-### 7. npm publish
-
-When the public API is stable (after plugins + composition are battle-tested):
+When the public API is stable:
 - Add `"exports"` field to `package.json`.
-- Add `types/index.d.ts`.
 - Semantic versioning: `2.0.0` for the stable public release.
 - Publish `vanillaforge` (or `@vanillaforge/core`) to npm.

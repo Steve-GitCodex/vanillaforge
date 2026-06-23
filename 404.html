@@ -5,24 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VanillaForge - Page Not Found</title>
     <script>
-        // GitHub Pages 404 redirect for single-page applications
-        // This script redirects to the main index.html with the current path as a parameter
-        const isGitHubPages = window.location.hostname.includes('github.io');
-        if (isGitHubPages) {
-            const pathSegments = window.location.pathname.split('/').filter(segment => segment);
-            if (pathSegments.length > 1 && pathSegments[0] === 'vanillaforge') {
-                // Remove the repo name from the path and redirect to index.html
-                const redirectPath = '/' + pathSegments.slice(1).join('/');
-                const redirectUrl = window.location.origin + '/vanillaforge/?redirect=' + encodeURIComponent(redirectPath);
-                window.location.href = redirectUrl;
+        // GitHub Pages SPA redirect: intercepts deep-link 404s and sends
+        // them back to index.html with the path encoded as ?redirect=...
+        // so the client-side router can handle it.
+        if (window.location.hostname.includes('github.io')) {
+            const segments = window.location.pathname.split('/').filter(Boolean);
+            if (segments.length > 1 && segments[0] === 'vanillaforge') {
+                const redirectPath = '/' + segments.slice(1).join('/');
+                window.location.replace(
+                    window.location.origin + '/vanillaforge/?redirect=' +
+                    encodeURIComponent(redirectPath)
+                );
             }
         }
     </script>
 </head>
 <body>
-    <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
-        <h1>Redirecting...</h1>
-        <p>If you are not automatically redirected, <a href="/vanillaforge/">click here</a>.</p>
+    <div style="text-align:center;padding:80px 20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#334155;">
+        <div style="font-size:5rem;font-weight:700;color:#e2e8f0;line-height:1;">404</div>
+        <h1 style="margin:8px 0 12px;font-size:1.5rem;font-weight:600;">Page not found</h1>
+        <p style="color:#64748b;margin-bottom:32px;">The page you are looking for does not exist.</p>
+        <a href="/" style="display:inline-block;padding:10px 24px;background:#f97316;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;">Go home</a>
     </div>
 </body>
 </html>

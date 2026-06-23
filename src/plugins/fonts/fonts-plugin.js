@@ -38,6 +38,7 @@
  *   Installing JetBrains Mono sets --vf-font-mono to 'JetBrains Mono', monospace, ...
  *
  * Bundled fonts are Latin-subset, variable-weight woff2 (open-source, MIT-licensed).
+ * Font data is loaded lazily — it is only fetched when the plugin is actually installed.
  */
 
 import { FONT_MANIFESTS } from './font-manifests.js';
@@ -64,10 +65,13 @@ export class FontsService {
     this._manifests = new Map(FONT_MANIFESTS);
     this._loadedFamilies = [];
     this._styleEl = null;
+    // Resolves once @font-face CSS has been injected (after any lazy font data loads).
+    this._ready = Promise.resolve();
 
     const requested = options.families || [];
     if (requested.length > 0) {
       this._load(requested);
+      this._ready = this._reinject();
     }
   }
 
@@ -92,7 +96,7 @@ export class FontsService {
   addFamily(name, manifest) {
     this._manifests.set(name, manifest);
     this._loadOne(name, manifest, null, null);
-    this._reinject();
+    this._ready = this._reinject();
     return this;
   }
 
@@ -115,8 +119,7 @@ export class FontsService {
 
       this._loadOne(name, manifest, weightFilter, styleFilter);
     }
-
-    this._reinject();
+    // _reinject() is called by the constructor after _load()
   }
 
   _loadOne(name, manifest, weightFilter, styleFilter) {
@@ -125,10 +128,12 @@ export class FontsService {
     this._loadedFamilies.push({ name, manifest, weights, styles, cssFamily: manifest.cssFamily });
   }
 
-  _reinject() {
+  async _reinject() {
     if (typeof document === 'undefined') return;
 
     if (!this._styleEl) {
+      // Create / reuse the style element synchronously before any await so that
+      // the element exists in the DOM as soon as _reinject() is called.
       this._styleEl = document.getElementById('vf-fonts');
       if (!this._styleEl) {
         this._styleEl = document.createElement('style');
@@ -137,23 +142,24 @@ export class FontsService {
       }
     }
 
-    this._styleEl.textContent = this._buildCSS();
+    // Build CSS — may trigger lazy font data imports (async).
+    this._styleEl.textContent = await this._buildCSS();
   }
 
-  _buildCSS() {
+  async _buildCSS() {
     const blocks = [];
 
     for (const { manifest, weights, styles, cssFamily } of this._loadedFamilies) {
       if (manifest.variable) {
         const [minW, maxW] = [Math.min(...weights), Math.max(...weights)];
         for (const style of styles) {
-          const src = this._src(manifest, null, style);
+          const src = await this._src(manifest, null, style);
           blocks.push(this._block(cssFamily, style, `${minW} ${maxW}`, src));
         }
       } else {
         for (const weight of weights) {
           for (const style of styles) {
-            const src = this._src(manifest, weight, style);
+            const src = await this._src(manifest, weight, style);
             blocks.push(this._block(cssFamily, style, String(weight), src));
           }
         }
@@ -169,9 +175,9 @@ export class FontsService {
    *   - a path was explicitly provided, OR
    *   - the manifest has no dataUri function (custom family).
    */
-  _src(manifest, weight, style) {
+  async _src(manifest, weight, style) {
     if (!this._path && typeof manifest.dataUri === 'function') {
-      const uri = manifest.dataUri(style);
+      const uri = await manifest.dataUri(style);
       if (uri) return `url('${uri}') format('woff2')`;
     }
 
@@ -231,7 +237,7 @@ export class FontsService {
  *   display  {string} - CSS font-display value (default 'swap').
  *
  * Side effects on install:
- *   - Injects <style id="vf-fonts"> with @font-face declarations.
+ *   - Injects <style id="vf-fonts"> with @font-face declarations (async, after dynamic import).
  *   - Registers FontsService under 'fonts' (app.get('fonts')).
  *   - If themePlugin is installed, updates --vf-font-sans / --vf-font-mono.
  */

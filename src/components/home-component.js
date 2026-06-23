@@ -46,7 +46,7 @@ export class HomeComponent extends BaseComponent {
             <span>VanillaForge</span>
           </a>
           <nav class="vf-nav-links">
-            <span class="vf-version">v1.0</span>
+            <span class="vf-version">v1.9.1</span>
             <a href="https://github.com/Steve-GitCodex/vanillaforge" target="_blank" rel="noopener">GitHub</a>
           </nav>
         </header>

@@ -17,6 +17,7 @@ const browserGlobals = {
   setInterval: 'readonly',
   clearInterval: 'readonly',
   fetch: 'readonly',
+  AbortController: 'readonly',
   alert: 'readonly',
   prompt: 'readonly',
   URL: 'readonly',

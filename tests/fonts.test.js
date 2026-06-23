@@ -36,8 +36,9 @@ function cleanup() {
 describe('FontsService — style injection', () => {
   afterEach(cleanup);
 
-  it('creates a <style id="vf-fonts"> element in document.head', () => {
-    makeService({ families: ['Inter'] });
+  it('creates a <style id="vf-fonts"> element in document.head', async () => {
+    const svc = makeService({ families: ['Inter'] });
+    await svc._ready;
     const el = document.getElementById('vf-fonts');
     expect(el).toBeTruthy();
     expect(el.tagName.toLowerCase()).toBe('style');
@@ -48,9 +49,11 @@ describe('FontsService — style injection', () => {
     expect(document.getElementById('vf-fonts')).toBeNull();
   });
 
-  it('reuses an existing #vf-fonts element rather than creating a duplicate', () => {
-    makeService({ families: ['Inter'] });
-    makeService({ families: ['JetBrains Mono'] });
+  it('reuses an existing #vf-fonts element rather than creating a duplicate', async () => {
+    const s1 = makeService({ families: ['Inter'] });
+    await s1._ready;
+    const s2 = makeService({ families: ['JetBrains Mono'] });
+    await s2._ready;
     expect(document.querySelectorAll('#vf-fonts').length).toBe(1);
   });
 });
@@ -62,25 +65,29 @@ describe('FontsService — style injection', () => {
 describe('FontsService — bundled data URI (default)', () => {
   afterEach(cleanup);
 
-  it('generates @font-face for Inter without a path option', () => {
-    makeService({ families: ['Inter'] });
+  it('generates @font-face for Inter without a path option', async () => {
+    const svc = makeService({ families: ['Inter'] });
+    await svc._ready;
     expect(getStyleContent()).toContain("font-family: 'Inter'");
   });
 
-  it('uses a data URI src when no path is given', () => {
-    makeService({ families: ['Inter'] });
+  it('uses a data URI src when no path is given', async () => {
+    const svc = makeService({ families: ['Inter'] });
+    await svc._ready;
     expect(getStyleContent()).toContain("url('data:font/woff2;base64,");
   });
 
-  it('generates data URI src for JetBrains Mono without a path option', () => {
-    makeService({ families: ['JetBrains Mono'] });
+  it('generates data URI src for JetBrains Mono without a path option', async () => {
+    const svc = makeService({ families: ['JetBrains Mono'] });
+    await svc._ready;
     const css = getStyleContent();
     expect(css).toContain("font-family: 'JetBrains Mono'");
     expect(css).toContain("url('data:font/woff2;base64,");
   });
 
-  it('generates separate blocks for normal and italic styles', () => {
-    makeService({ families: ['Inter'] });
+  it('generates separate blocks for normal and italic styles', async () => {
+    const svc = makeService({ families: ['Inter'] });
+    await svc._ready;
     const css = getStyleContent();
     expect(css).toContain('font-style: normal');
     expect(css).toContain('font-style: italic');
@@ -94,15 +101,17 @@ describe('FontsService — bundled data URI (default)', () => {
 describe('FontsService — path override', () => {
   afterEach(cleanup);
 
-  it('uses a URL path src when path is provided', () => {
-    makeService({ families: ['Inter'], path: '/assets/fonts' });
+  it('uses a URL path src when path is provided', async () => {
+    const svc = makeService({ families: ['Inter'], path: '/assets/fonts' });
+    await svc._ready;
     const css = getStyleContent();
     expect(css).toContain("url('/assets/fonts/Inter-Variable.woff2')");
     expect(css).not.toContain('data:font/woff2');
   });
 
-  it('strips a trailing slash from path', () => {
-    makeService({ families: ['Inter'], path: '/assets/fonts/' });
+  it('strips a trailing slash from path', async () => {
+    const svc = makeService({ families: ['Inter'], path: '/assets/fonts/' });
+    await svc._ready;
     expect(getStyleContent()).toContain("url('/assets/fonts/Inter-Variable.woff2')");
   });
 });
@@ -114,23 +123,27 @@ describe('FontsService — path override', () => {
 describe('FontsService — @font-face block content', () => {
   afterEach(cleanup);
 
-  it('uses the full weight range for a variable font', () => {
-    makeService({ families: ['Inter'] });
+  it('uses the full weight range for a variable font', async () => {
+    const svc = makeService({ families: ['Inter'] });
+    await svc._ready;
     expect(getStyleContent()).toContain('font-weight: 100 900');
   });
 
-  it('uses font-display: swap by default', () => {
-    makeService({ families: ['Inter'] });
+  it('uses font-display: swap by default', async () => {
+    const svc = makeService({ families: ['Inter'] });
+    await svc._ready;
     expect(getStyleContent()).toContain('font-display: swap');
   });
 
-  it('respects a custom display option', () => {
-    makeService({ families: ['Inter'], display: 'optional' });
+  it('respects a custom display option', async () => {
+    const svc = makeService({ families: ['Inter'], display: 'optional' });
+    await svc._ready;
     expect(getStyleContent()).toContain('font-display: optional');
   });
 
-  it('generates blocks for both Inter and JetBrains Mono in one call', () => {
-    makeService({ families: ['Inter', 'JetBrains Mono'] });
+  it('generates blocks for both Inter and JetBrains Mono in one call', async () => {
+    const svc = makeService({ families: ['Inter', 'JetBrains Mono'] });
+    await svc._ready;
     const css = getStyleContent();
     expect(css).toContain("font-family: 'Inter'");
     expect(css).toContain("font-family: 'JetBrains Mono'");
@@ -144,13 +157,15 @@ describe('FontsService — @font-face block content', () => {
 describe('FontsService — weight and style filtering', () => {
   afterEach(cleanup);
 
-  it('respects custom weights for a variable font (uses min/max of subset)', () => {
-    makeService({ families: [{ name: 'Inter', weights: [400, 700] }] });
+  it('respects custom weights for a variable font (uses min/max of subset)', async () => {
+    const svc = makeService({ families: [{ name: 'Inter', weights: [400, 700] }] });
+    await svc._ready;
     expect(getStyleContent()).toContain('font-weight: 400 700');
   });
 
-  it('respects style filter — omits italic when only normal is requested', () => {
-    makeService({ families: [{ name: 'Inter', styles: ['normal'] }] });
+  it('respects style filter — omits italic when only normal is requested', async () => {
+    const svc = makeService({ families: [{ name: 'Inter', styles: ['normal'] }] });
+    await svc._ready;
     const css = getStyleContent();
     expect(css).toContain('font-style: normal');
     expect(css).not.toContain('font-style: italic');
@@ -182,8 +197,9 @@ describe('FontsService — getFamilies()', () => {
     expect(svc.getFamilies()).toEqual([]);
   });
 
-  it('returns CSS family names of all loaded fonts', () => {
+  it('returns CSS family names of all loaded fonts', async () => {
     const svc = makeService({ families: ['Inter', 'JetBrains Mono'] });
+    await svc._ready;
     expect(svc.getFamilies()).toEqual(['Inter', 'JetBrains Mono']);
   });
 });
@@ -195,7 +211,7 @@ describe('FontsService — getFamilies()', () => {
 describe('FontsService — addFamily()', () => {
   afterEach(cleanup);
 
-  it('registers and generates CSS for a custom static font', () => {
+  it('registers and generates CSS for a custom static font', async () => {
     const svc = makeService({ path: '/fonts' });
     svc.addFamily('MyFont', {
       cssFamily: 'MyFont',
@@ -205,13 +221,14 @@ describe('FontsService — addFamily()', () => {
       filename: (weight) => `MyFont-${weight}.woff2`,
     });
 
+    await svc._ready;
     const css = getStyleContent();
     expect(css).toContain("font-family: 'MyFont'");
     expect(css).toContain("url('/fonts/MyFont-400.woff2')");
     expect(css).toContain("url('/fonts/MyFont-700.woff2')");
   });
 
-  it('includes the custom family in getFamilies()', () => {
+  it('includes the custom family in getFamilies()', async () => {
     const svc = makeService({ path: '/fonts' });
     svc.addFamily('MyFont', {
       cssFamily: 'MyFont',
@@ -220,6 +237,7 @@ describe('FontsService — addFamily()', () => {
       styles: ['normal'],
       filename: () => 'MyFont-400.woff2',
     });
+    await svc._ready;
     expect(svc.getFamilies()).toContain('MyFont');
   });
 
@@ -284,10 +302,11 @@ describe('fontsPlugin', () => {
     expect(app.get('fonts')).toBeInstanceOf(FontsService);
   });
 
-  it('is idempotent — second use() call is a no-op', () => {
+  it('is idempotent — second use() call is a no-op', async () => {
     const app = createApp({ debug: false });
     app.use(fontsPlugin, { families: ['Inter'] });
     app.use(fontsPlugin, { families: ['JetBrains Mono'] });
+    await app.get('fonts')._ready;
     expect(app.get('fonts').getFamilies()).toEqual(['Inter']);
   });
 

@@ -26,7 +26,7 @@ export class HomeComponent extends BaseComponent {
   getTemplate() {
     return `
       <div style="max-width:520px;margin:80px auto;text-align:center">
-        <h1 style="margin-bottom:8px">{{project-name}}</h1>
+        <h1 style="margin-bottom:8px">${this.app?.config?.appName ?? '{{project-name}}'}</h1>
         <p style="color:var(--vf-text-muted);margin-bottom:32px">
           Count: <strong>${this.state.count}</strong>
         </p>

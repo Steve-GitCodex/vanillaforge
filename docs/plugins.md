@@ -153,6 +153,10 @@ app.provide('icons', {
 The fonts plugin ships self-hosted, Latin-subset variable fonts as bundled data URIs — no
 external requests, no Google Fonts, no file setup required.
 
+Font data is loaded **lazily**: the ~244 KB of base64 data is only fetched the first time
+the plugin is actually installed with a given family. Importing `framework.js` without calling
+`app.use(fontsPlugin, ...)` adds zero overhead.
+
 ### Install (zero config)
 
 ```js

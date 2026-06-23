@@ -10,7 +10,7 @@ class HomeComponent extends BaseComponent {
   getTemplate() {
     return `
       <div style="font-family:system-ui;max-width:480px;margin:80px auto;text-align:center">
-        <h1>VanillaForge</h1>
+        <h1>${this.app?.config?.appName ?? 'VanillaForge'}</h1>
         <p style="color:#666;margin-bottom:32px">Count: <strong>${this.state.count}</strong></p>
         <button data-action="increment"
           style="padding:10px 24px;border:none;border-radius:6px;background:#3b82f6;color:#fff;cursor:pointer;font-size:1rem">

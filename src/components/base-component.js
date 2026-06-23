@@ -549,31 +549,41 @@ export class BaseComponent {
      */
     async autoLoadCSS() {
         if (!this.name || typeof window === 'undefined') return;
-        
-        // Generate CSS filename from component name
+
         const cssFileName = this.name.toLowerCase()
-            .replace(/component$/, '') // Remove 'component' suffix if present
-            .replace(/[^a-z0-9]/g, '-') // Replace non-alphanumeric with hyphens
-            .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
-            .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
-        
-        // Add 'component' suffix back for CSS file naming convention
+            .replace(/component$/, '')
+            .replace(/[^a-z0-9]/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '');
+
         const fullCssName = cssFileName ? `${cssFileName}-component` : this.name.toLowerCase();
-        
+
         const cssPaths = [
-            `styles/components/${fullCssName}.css`,     // For built version (primary)
-            `src/styles/components/${fullCssName}.css`, // For development
-            `styles/components/${this.name.toLowerCase()}.css`, // Fallback with exact name
-            `src/styles/components/${this.name.toLowerCase()}.css` // Fallback development
+            `styles/components/${fullCssName}.css`,
+            `src/styles/components/${fullCssName}.css`,
+            `styles/components/${this.name.toLowerCase()}.css`,
+            `src/styles/components/${this.name.toLowerCase()}.css`,
         ];
-        
+
         for (const cssPath of cssPaths) {
             try {
+                // HEAD check avoids a visible 404 in the browser console when
+                // the file simply doesn't exist (common in generated projects).
+                // AbortController prevents the fetch from hanging indefinitely
+                // in file:// environments (e.g. VS Code's built-in browser).
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 500);
+                let resp;
+                try {
+                    resp = await fetch(cssPath, { method: 'HEAD', signal: controller.signal });
+                } finally {
+                    clearTimeout(timeout);
+                }
+                if (!resp.ok) continue;
                 await this.loadCSS(cssPath);
                 this.logger.debug(`Auto-loaded CSS: ${cssPath}`);
-                break; // Stop after first successful load
+                break;
             } catch (_e) {
-                // Continue to next path - this is expected behavior
                 continue;
             }
         }

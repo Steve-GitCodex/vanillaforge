@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.1] - 2026-06-23
+
+### Fixed
+
+#### Font data now loads lazily (`src/plugins/fonts/`)
+- `font-manifests.js` converted static imports of `inter.js` and `jetbrains-mono.js`
+  (~244 KB of base64 font data) to dynamic `import()` inside each `dataUri()` function.
+  The data is only fetched the first time `fontsPlugin` is actually installed.
+  Previously, every `import { createApp } from 'vanillaforge'` — including projects that
+  never use fonts — paid the 244 KB parsing cost up front, which broke the demo and
+  generated apps in VS Code's built-in browser (module-load timeout / stuck loading spinner).
+- `FontsService._src()`, `_buildCSS()`, and `_reinject()` are now `async` to handle the
+  lazy data loading. A `_ready` Promise is exposed so callers can `await svc._ready`
+  after installation.
+- `ESLint` config updated: `AbortController` added to browser globals.
+
+#### `autoLoadCSS` no longer hangs in file:// environments (`src/components/base-component.js`)
+- Added `AbortController` with a 500 ms timeout to the `fetch HEAD` call in `autoLoadCSS`.
+  In environments where `fetch` never rejects (VS Code webview, `file://` protocol),
+  the old code left `init()` suspended indefinitely. The abort ensures the method always
+  returns within half a second even when the network is unavailable.
+
+#### Demo CSS always loads in VS Code's built-in browser (`index.html`)
+- Added explicit `<link>` tags for `home-component.css` and `not-found-component.css`.
+  All visual styling for the demo lives in those files; relying solely on `autoLoadCSS`
+  meant a blank/unstyled page whenever `fetch` was unavailable.
+
 ## [1.9.0] - 2026-06-23
 
 This release completes the public API surface and prepares the package for npm

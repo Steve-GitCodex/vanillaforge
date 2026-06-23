@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-06-23
+
+This release completes the public API surface and prepares the package for npm
+publication.
+
+### Added
+
+#### Service class re-exports
+- `IconsService`, `ThemeService`, `AlertsService`, and `FontsService` are now exported
+  directly from `src/framework.js` alongside their plugin objects, matching the
+  existing `StoreService` export. Allows standalone instantiation and TypeScript type
+  annotations without importing from internal plugin paths.
+
+#### Publish readiness
+- `prepublishOnly` npm script — runs `npm test && npm run lint` automatically before
+  any `npm publish`.
+- `package.json` `"files"` field tightened to include only framework source
+  (`src/framework.js`, `src/core/`, `src/components/base-component.js`,
+  `src/plugins/`, `src/utils/`) and `types/`. Demo files, build scripts, and
+  examples are no longer included in the published package.
+- `FRAMEWORK_VERSION` constant bumped to `1.9.0`.
+
 ## [1.8.0] - 2026-06-23
 
 This release adds **route loaders** — async data-fetching that runs before a route

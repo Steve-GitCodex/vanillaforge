@@ -175,9 +175,10 @@ describe('themePlugin', () => {
     expect(app.get('theme').getToken('primary')).toBe('#111');
   });
 
-  it('is exported from src/framework.js', async () => {
-    const { themePlugin: imported } = await import('../src/framework.js');
-    expect(imported).toBeTruthy();
-    expect(typeof imported.install).toBe('function');
+  it('themePlugin and ThemeService are both exported from framework.js', async () => {
+    const { themePlugin: imported, ThemeService: ImportedService } =
+      await import('../src/framework.js');
+    expect(imported).toBe(themePlugin);
+    expect(ImportedService).toBe(ThemeService);
   });
 });

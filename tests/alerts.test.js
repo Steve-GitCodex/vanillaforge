@@ -236,9 +236,10 @@ describe('alertsPlugin', () => {
     expect(app.get('alerts')._duration).toBe(111);
   });
 
-  it('is exported from src/framework.js', async () => {
-    const { alertsPlugin: imported } = await import('../src/framework.js');
-    expect(imported).toBeTruthy();
-    expect(typeof imported.install).toBe('function');
+  it('alertsPlugin and AlertsService are both exported from framework.js', async () => {
+    const { alertsPlugin: imported, AlertsService: ImportedService } =
+      await import('../src/framework.js');
+    expect(imported).toBe(alertsPlugin);
+    expect(ImportedService).toBe(AlertsService);
   });
 });

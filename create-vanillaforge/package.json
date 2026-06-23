@@ -1,6 +1,6 @@
 {
   "name": "create-vanillaforge",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Scaffold a new VanillaForge project",
   "type": "module",
   "bin": {

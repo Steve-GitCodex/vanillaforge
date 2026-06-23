@@ -123,6 +123,19 @@ Or add icons after install:
 app.get('icons').register('star', '<polygon points="..."/>');
 ```
 
+### Accessing the service
+
+```js
+const icons = app.get('icons');  // IconsService instance
+icons.render('check', { size: 20 });
+```
+
+`IconsService` is also exported directly from `framework.js`:
+
+```js
+import { IconsService } from './src/framework.js';
+```
+
 ### Replacing the icons service entirely
 
 ```js
@@ -217,6 +230,12 @@ const fonts = app.get('fonts');          // FontsService instance
 fonts.getFamilies();                     // ['Inter', 'JetBrains Mono']
 ```
 
+`FontsService` is also exported directly from `framework.js`:
+
+```js
+import { FontsService } from './src/framework.js';
+```
+
 ### Registering a custom font family
 
 ```js
@@ -287,6 +306,12 @@ theme.setTokens({ primary: '#0070f3', radius: '4px' }); // live update
 theme.getToken('primary'); // '#0070f3'
 ```
 
+`ThemeService` is also exported directly from `framework.js`:
+
+```js
+import { ThemeService } from './src/framework.js';
+```
+
 ### Base stylesheet classes
 
 | Class | Description |
@@ -314,6 +339,18 @@ import { createApp, alertsPlugin } from './src/framework.js';
 
 const app = createApp({ ... });
 app.use(alertsPlugin);
+```
+
+### Accessing the service
+
+```js
+const alerts = app.get('alerts');  // AlertsService instance
+```
+
+`AlertsService` is also exported directly from `framework.js`:
+
+```js
+import { AlertsService } from './src/framework.js';
 ```
 
 ### Toasts
@@ -430,6 +467,12 @@ import { createApp, storePlugin } from './src/framework.js';
 
 const app = createApp({ ... });
 app.use(storePlugin);
+```
+
+`StoreService` is also exported directly from `framework.js`:
+
+```js
+import { StoreService } from './src/framework.js';
 ```
 
 ### Reading and writing

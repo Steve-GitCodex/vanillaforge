@@ -291,9 +291,10 @@ describe('fontsPlugin', () => {
     expect(app.get('fonts').getFamilies()).toEqual(['Inter']);
   });
 
-  it('is exported from src/framework.js', async () => {
-    const { fontsPlugin: imported } = await import('../src/framework.js');
-    expect(imported).toBeTruthy();
-    expect(typeof imported.install).toBe('function');
+  it('fontsPlugin and FontsService are both exported from framework.js', async () => {
+    const { fontsPlugin: imported, FontsService: ImportedService } =
+      await import('../src/framework.js');
+    expect(imported).toBe(fontsPlugin);
+    expect(ImportedService).toBe(FontsService);
   });
 });

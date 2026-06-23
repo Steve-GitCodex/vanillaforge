@@ -60,6 +60,17 @@ function parseArgs(argv) {
 }
 
 // ---------------------------------------------------------------------------
+// Validation
+// ---------------------------------------------------------------------------
+
+function validateProjectName(name) {
+  if (!/^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/i.test(name)) {
+    console.error('Error: project name may only contain letters, numbers, and hyphens.');
+    process.exit(1);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Prompt helpers
 // ---------------------------------------------------------------------------
 
@@ -94,28 +105,26 @@ async function promptTemplate(rl) {
 }
 
 // ---------------------------------------------------------------------------
-// File copy
+// File copy — renames gitignore -> .gitignore and substitutes tokens in all files
+// (npm strips .gitignore from published packages, so templates store it as 'gitignore')
 // ---------------------------------------------------------------------------
 
-function copyDir(src, dest) {
+function copyDir(src, dest, tokens) {
   fs.mkdirSync(dest, { recursive: true });
   for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
     const srcPath = path.join(src, entry.name);
-    const destPath = path.join(dest, entry.name);
+    const destName = entry.name === 'gitignore' ? '.gitignore' : entry.name;
+    const destPath = path.join(dest, destName);
     if (entry.isDirectory()) {
-      copyDir(srcPath, destPath);
+      copyDir(srcPath, destPath, tokens);
     } else {
-      fs.copyFileSync(srcPath, destPath);
+      let content = fs.readFileSync(srcPath, 'utf8');
+      for (const [from, to] of Object.entries(tokens)) {
+        content = content.split(from).join(to);
+      }
+      fs.writeFileSync(destPath, content, 'utf8');
     }
   }
-}
-
-function rewriteFile(filePath, replacements) {
-  let content = fs.readFileSync(filePath, 'utf8');
-  for (const [from, to] of replacements) {
-    content = content.split(from).join(to);
-  }
-  fs.writeFileSync(filePath, content, 'utf8');
 }
 
 // ---------------------------------------------------------------------------
@@ -128,6 +137,8 @@ async function main() {
   const rl = createInterface({ input: process.stdin, output: process.stdout });
 
   const projectName = argName || (await promptProjectName(rl));
+  validateProjectName(projectName);
+
   const template = argTemplate || (await promptTemplate(rl));
 
   rl.close();
@@ -145,18 +156,8 @@ async function main() {
   }
 
   const templateDir = path.join(TEMPLATES_DIR, template);
-  copyDir(templateDir, targetDir);
-
-  // Patch the app name into the generated files
-  const htmlPath = path.join(targetDir, 'index.html');
-  if (fs.existsSync(htmlPath)) {
-    rewriteFile(htmlPath, [['{{project-name}}', projectName]]);
-  }
-
-  const pkgPath = path.join(targetDir, 'package.json');
-  if (fs.existsSync(pkgPath)) {
-    rewriteFile(pkgPath, [['{{project-name}}', projectName]]);
-  }
+  const tokens = { '{{project-name}}': projectName };
+  copyDir(templateDir, targetDir, tokens);
 
   console.log(`\nScaffolded "${projectName}" with the "${template}" template.\n`);
   console.log('Next steps:\n');

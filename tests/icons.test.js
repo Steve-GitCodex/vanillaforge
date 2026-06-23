@@ -187,3 +187,16 @@ describe('BaseComponent.icon()', () => {
     expect(html).toBe('<div></div>');
   });
 });
+
+// ---------------------------------------------------------------------------
+// framework.js re-exports
+// ---------------------------------------------------------------------------
+
+describe('icons — framework.js exports', () => {
+  it('iconsPlugin and IconsService are both exported from framework.js', async () => {
+    const { iconsPlugin: imported, IconsService: ImportedService } =
+      await import('../src/framework.js');
+    expect(imported).toBe(iconsPlugin);
+    expect(ImportedService).toBe(IconsService);
+  });
+});

@@ -6,6 +6,6 @@
     "dev": "npx http-server . -p 3000 -c-1 --cors -o"
   },
   "dependencies": {
-    "vanillaforge": "github:Steve-GitCodex/vanillaforge"
+    "vanillaforge": "^1.9.0"
   }
 }

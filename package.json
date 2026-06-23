@@ -1,6 +1,6 @@
 {
   "name": "vanillaforge",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "VanillaForge - A modern, lightweight vanilla JavaScript framework for forging Single Page Applications",
   "type": "module",
   "main": "src/framework.js",
@@ -36,6 +36,7 @@
     "serve-dev": "npx http-server . -p 3000 -c-1 --cors",
     "lint": "eslint src/ --ext .js",
     "format": "prettier --write \"src/**/*.{js,css,html}\"",
+    "prepublishOnly": "npm test && npm run lint",
     "test": "vitest run",
     "test:watch": "vitest",
     "example": "cd examples/todo-app && npm run dev",
@@ -61,10 +62,12 @@
     "url": "https://github.com/Steve-GitCodex/vanillaforge.git"
   },
   "files": [
-    "src/",
+    "src/framework.js",
+    "src/core/",
+    "src/components/base-component.js",
+    "src/plugins/",
+    "src/utils/",
     "types/",
-    "scripts/",
-    "examples/",
     "README.md",
     "CHANGELOG.md"
   ],

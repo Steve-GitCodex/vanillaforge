@@ -157,9 +157,14 @@ getTemplate() {
 
 ---
 
-## Next: npm publish
+## Done (v1.9)
 
-When the public API is stable:
-- Add `"exports"` field to `package.json`.
-- Semantic versioning: `2.0.0` for the stable public release.
-- Publish `vanillaforge` (or `@vanillaforge/core`) to npm.
+### npm publish readiness
+- `"exports"` field in `package.json` — wires the default entry and `./types` for
+  TypeScript consumers.
+- `"files"` field tightened — publishes only framework source, plugins, utils, and
+  types; demo files, build scripts, and examples are excluded.
+- `prepublishOnly` script — runs `npm test && npm run lint` before every publish.
+- `IconsService`, `ThemeService`, `AlertsService`, `FontsService` re-exported from
+  `src/framework.js` to complete the public API surface.
+- Version bumped to `1.9.0`; ready for `npm publish vanillaforge`.

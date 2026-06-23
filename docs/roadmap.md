@@ -95,12 +95,31 @@ Every item below plugs into the **plugin/service registry** added in v1.1. See
 
 ---
 
+## Done (v1.7)
+
+### Shared store plugin
+- `storePlugin` — install with `app.use(storePlugin)`.
+- `store.set(key, value)` — writes a value; identical values (via `Object.is`) are no-ops.
+- `store.get(key)` — reads the current value (returns `undefined` for unset keys).
+- `store.subscribe(key, fn)` — per-key subscription; handler receives `(value, prev)`;
+  returns an unsubscribe function.
+- `store.subscribeAll(fn)` — subscribes to all writes; handler receives `(key, value, prev)`.
+- `store.delete(key)` — removes a key and fires change events.
+- `store.keys()` — returns all stored key names.
+- Emits `'store:change'` and `'store:change:<key>'` on the shared EventBus so any code can
+  react without going through the service directly.
+- Exported from `src/framework.js` as `storePlugin` + `StoreService`.
+- Full TypeScript generics in `types/index.d.ts`.
+
+---
+
 ## Done (v1.5)
 
 ### Scaffold CLI + TypeScript types
 - `npx create-vanillaforge my-app` — interactive or `--template=<name>` flag.
 - Four templates: `minimal` (no plugins), `full` (all plugins), `todo-app`, `router-app`.
 - Each scaffold uses a GitHub git dependency + importmap so no build step is needed in dev.
+- CLI package lives in `create-vanillaforge/` (monorepo style); bin: `create-vanillaforge/bin/cli.js`.
 - `types/index.d.ts` — full TypeScript declaration file for the entire public API; wired into
   the package `"exports"` field so VS Code picks it up automatically.
 - Framework `package.json` updated: `"types": "types/index.d.ts"`, `"files"` includes `types/`.
@@ -110,11 +129,12 @@ Every item below plugs into the **plugin/service registry** added in v1.1. See
 
 ## Later: core engine upgrades
 
-### 1. Data loading + shared state
+### 1. Route loaders
 
-**Why:** Real apps need async data (route loaders) and state shared across components (a store).
+**Why:** The store is done; the remaining async data piece is per-route loaders that let
+components receive pre-fetched data as props before their first render.
 
-**Route loaders:**
+**API:**
 ```js
 addRoute('/users', {
   component: UsersListComponent,
@@ -123,17 +143,8 @@ addRoute('/users', {
 })
 ```
 
-**Global store:**
-```js
-const store = this.service('store');
-store.set('cart', [...items]);
-store.get('cart');
-store.subscribe('cart', (items) => this.setState({ items }));
-```
-- Layered on top of the existing EventBus (EventBus already does pub/sub; store just adds
-  persistent state and a subscription shortcut).
-
-**Where it plugs in:** `src/plugins/store/` + loader support wired into `src/core/router.js`.
+**Where it plugs in:** Loader support wired into `src/core/router.js`; the fetched value
+is merged into the component props as `props.data` before the component mounts.
 
 ---
 

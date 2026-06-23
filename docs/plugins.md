@@ -418,6 +418,91 @@ getMethods() {
 
 ---
 
+## Store plugin
+
+The store plugin provides a shared, reactive key/value store that any component or plugin can
+read, write, and subscribe to — no prop-drilling required.
+
+### Install
+
+```js
+import { createApp, storePlugin } from './src/framework.js';
+
+const app = createApp({ ... });
+app.use(storePlugin);
+```
+
+### Reading and writing
+
+```js
+// From any component:
+const store = this.service('store');
+
+store.set('cart', [{ id: 1, qty: 2 }]);   // write
+store.get('cart');                          // read → current value
+store.delete('cart');                       // remove
+store.keys();                               // → ['cart', ...]
+```
+
+Writes are no-ops when the value is identical (uses `Object.is` equality), so subscribers
+are never notified needlessly.
+
+### Subscribing to changes
+
+```js
+// Per-key subscription
+const unsub = store.subscribe('cart', (value, prev) => {
+  this.setState({ cart: value });
+});
+unsub(); // stop listening
+
+// Subscribe to all changes
+const unsub = store.subscribeAll((key, value, prev) => {
+  console.log(key, 'changed from', prev, 'to', value);
+});
+```
+
+### EventBus events
+
+The store also emits on the shared EventBus so any code can react without holding a
+store reference:
+
+```js
+app.eventBus.on('store:change', ({ key, value, prev }) => { ... });
+app.eventBus.on('store:change:cart', ({ value, prev }) => { ... });
+```
+
+### Example — cross-component cart
+
+```js
+// CartButton writes:
+getMethods() {
+  return {
+    addItem: () => {
+      const store = this.service('store');
+      const current = store.get('cart') ?? [];
+      store.set('cart', [...current, this.props.item]);
+    }
+  };
+}
+
+// CartSummary reads and reacts:
+async onInit() {
+  const store = this.service('store');
+  this._unsub = store.subscribe('cart', (items) => {
+    this.setState({ count: items.length });
+  });
+}
+
+getLifecycle() {
+  return {
+    onUnmount: () => this._unsub?.(),
+  };
+}
+```
+
+---
+
 ## Plugin rules
 
 - A plugin must either be a `function(app, options) => void` or an object with

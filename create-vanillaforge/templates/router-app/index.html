@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{project-name}}</title>
+  <script type="importmap">
+  {
+    "imports": {
+      "vanillaforge": "./node_modules/vanillaforge/src/framework.js"
+    }
+  }
+  </script>
+  <style>
+    body { padding: 40px 20px; font-family: var(--vf-font-sans, system-ui, sans-serif); }
+    .shell { max-width: 640px; margin: 0 auto; }
+    .topbar { display:flex; align-items:center; gap:12px; margin-bottom:24px; }
+    .topbar h2 { font-size:1.1rem; }
+    .muted { color:var(--vf-text-muted); font-size:.85rem; }
+
+    .user-list { list-style:none; margin-top:16px; }
+    .component.user-card { display:block; }
+    .user-card { border-top:1px solid var(--vf-border); }
+    .user-card:first-child { border-top:none; }
+    .user-card-row {
+      display:flex; align-items:center;
+      justify-content:space-between; padding:14px 4px;
+    }
+    .user-card-link {
+      display:flex; align-items:center; gap:12px;
+      text-decoration:none; color:inherit; flex:1;
+    }
+    .user-card-link:hover .user-card-name { color:var(--vf-primary); }
+    .user-card-avatar {
+      width:36px; height:36px; border-radius:50%;
+      background:var(--vf-primary); color:#fff;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:700; font-size:.95rem; flex-shrink:0;
+    }
+    .user-card-name { display:block; font-weight:600; }
+    .user-card-role { font-size:.82rem; color:var(--vf-text-muted); }
+    .user-card-actions { display:flex; align-items:center; gap:2px; }
+    .user-card-toggle, .user-card-remove {
+      background:none; border:none; cursor:pointer;
+      color:var(--vf-text-muted); padding:4px;
+      border-radius:var(--vf-radius-sm); display:flex; align-items:center;
+    }
+    .user-card-toggle:hover { background:var(--vf-border); color:var(--vf-text); }
+    .user-card-remove:hover { background:#fef2f2; color:var(--vf-danger,#ef4444); }
+    .user-card-bio {
+      padding:0 4px 14px 4px; color:var(--vf-text); font-size:.92rem; line-height:1.55;
+    }
+    .user-card-bio p { margin-bottom:10px; }
+    .user-card-detail-link {
+      display:inline-flex; align-items:center; gap:4px;
+      color:var(--vf-primary); text-decoration:none;
+      font-weight:600; font-size:.88rem;
+    }
+    .user-card-detail-link:hover { text-decoration:underline; }
+    .detail-header { display:flex; align-items:center; gap:16px; margin:16px 0; }
+    .detail-avatar {
+      width:56px; height:56px; border-radius:50%;
+      background:var(--vf-primary); color:#fff;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:700; font-size:1.4rem; flex-shrink:0;
+    }
+    .back-link {
+      display:inline-flex; align-items:center; gap:6px;
+      margin-bottom:16px; color:var(--vf-primary);
+      text-decoration:none; font-weight:600;
+    }
+    .back-link:hover { text-decoration:underline; }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <h2>{{project-name}}</h2>
+      <span class="muted">· routing + composition + icons + alerts</span>
+    </div>
+    <div id="main-content"></div>
+  </div>
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>

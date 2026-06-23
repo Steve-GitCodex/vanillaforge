@@ -43,6 +43,7 @@ export { iconsPlugin } from './plugins/icons/icons-plugin.js';
 export { themePlugin } from './plugins/theme/theme-plugin.js';
 export { alertsPlugin } from './plugins/alerts/alerts-plugin.js';
 export { fontsPlugin } from './plugins/fonts/fonts-plugin.js';
+export { storePlugin, StoreService } from './plugins/store/store-plugin.js';
 
 // Import classes for internal use
 import { ComponentManager } from './core/component-manager.js';
@@ -318,5 +319,5 @@ export function createApp(config = {}) {
 }
 
 // Framework metadata
-export const FRAMEWORK_VERSION = '1.3.0';
+export const FRAMEWORK_VERSION = '1.6.0';
 export const FRAMEWORK_NAME = 'VanillaForge';

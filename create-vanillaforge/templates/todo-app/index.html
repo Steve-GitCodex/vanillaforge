@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{project-name}}</title>
+  <script type="importmap">
+  {
+    "imports": {
+      "vanillaforge": "./node_modules/vanillaforge/src/framework.js"
+    }
+  }
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--vf-font-sans, system-ui, sans-serif);
+      background: var(--vf-background, #f4f5f7);
+      color: var(--vf-text, #0f172a);
+      min-height: 100vh;
+      padding: 48px 20px;
+    }
+    .app-shell { max-width: 600px; margin: 0 auto; }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div id="main-content"></div>
+  </div>
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>

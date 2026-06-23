@@ -440,6 +440,47 @@ export declare class FontsService {
 export declare const fontsPlugin: Plugin;
 
 // ---------------------------------------------------------------------------
+// Store plugin
+// ---------------------------------------------------------------------------
+
+export declare class StoreService {
+  /**
+   * Write a value. Identical values (via Object.is) are ignored — no events fired.
+   */
+  set(key: string, value: unknown): void;
+
+  /**
+   * Read the current value. Returns `undefined` when the key has never been written.
+   */
+  get(key: string): unknown;
+
+  /**
+   * Subscribe to changes for a single key.
+   * The handler receives `(value, prev)` on each change.
+   * Returns an unsubscribe function.
+   */
+  subscribe(key: string, handler: (value: unknown, prev: unknown) => void): () => void;
+
+  /**
+   * Subscribe to ALL store changes.
+   * The handler receives `(key, value, prev)` on each write.
+   * Returns an unsubscribe function.
+   */
+  subscribeAll(handler: (key: string, value: unknown, prev: unknown) => void): () => void;
+
+  /**
+   * Remove a key and fire change events with `value: undefined`.
+   * No-op when the key does not exist.
+   */
+  delete(key: string): void;
+
+  /** Returns all keys currently stored. */
+  keys(): string[];
+}
+
+export declare const storePlugin: Plugin;
+
+// ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 

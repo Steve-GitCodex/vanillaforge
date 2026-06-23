@@ -1,0 +1,29 @@
+{
+  "name": "create-vanillaforge",
+  "version": "1.0.0",
+  "description": "Scaffold a new VanillaForge project",
+  "type": "module",
+  "bin": {
+    "create-vanillaforge": "./bin/cli.js"
+  },
+  "files": [
+    "bin/",
+    "templates/"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "vanillaforge",
+    "scaffold",
+    "create-app",
+    "spa"
+  ],
+  "author": "Stephen Musyoka (https://github.com/Steve-GitCodex)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Steve-GitCodex/vanillaforge.git",
+    "directory": "create-vanillaforge"
+  }
+}

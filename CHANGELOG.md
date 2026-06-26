@@ -7,6 +7,70 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.2] - 2026-06-26
+
+This release hardens the framework against XSS, removes CSP-hostile patterns, and
+fixes several quality issues found during a pre-publish audit.
+
+### Added
+
+#### HTML escaping primitive (`src/utils/html.js`)
+- `escapeHtml(value)` — canonical HTML escape for `& < > " '`; `null`/`undefined` → `''`.
+- `RawHtml` class — wraps a trusted string so the `html` tagged template passes it through unchanged.
+- `raw(value)` — convenience factory for `RawHtml`.
+- `html` tagged template — auto-escapes every interpolation; `RawHtml` values pass through.
+  Nested `html\`\`` calls and arrays are each individually escaped.
+- `this.icon()` and `this.child()` now return `RawHtml`, so they compose safely in both
+  plain template literals (via `toString()`) and `html\`\`` (no double-escaping).
+- All four symbols exported from `src/framework.js`: `import { html, raw, escapeHtml, RawHtml } from 'vanillaforge'`.
+- Full TypeScript types added to `types/index.d.ts` (`RawHtml` class, `html`/`raw`/`escapeHtml` signatures).
+
+#### Tests
+- `tests/html.test.js` — covers `escapeHtml`, `RawHtml`, `raw`, and `html\`\``:
+  angle brackets, ampersands, quotes, null/undefined coercion, array handling,
+  nested templates, and the icon()-style RawHtml pass-through.
+- `tests/notification.test.js` — covers the `Notification` service: `showToast`,
+  `showModal`, and the `escapeHtml` guard against XSS payloads in title/message/details.
+
+### Fixed
+
+#### Security
+
+- **`notification.js` XSS (`src/utils/notification.js`):** `title`, `message`, `details`,
+  and button labels are now escaped with `escapeHtml` before injection into `innerHTML`.
+  Button `action` values are sanitised before use as CSS selectors.
+  This closes the default-reachable XSS path in the legacy error-notification flow.
+- **Router param injection (`src/core/router.js`):** dynamic route segments are now decoded
+  with `decodeURIComponent` (with a safe fallback for malformed input) so
+  `/users/John%20Doe` → `params.id === 'John Doe'`. `docs/router.md` updated with a note
+  on decoded params and the escaping requirement.
+- **`app.js` CSP (`src/app.js`):** replaced the inline `onclick="location.reload()"` in
+  the error-fallback button (blocked by `script-src` without `'unsafe-inline'`) with a
+  programmatically created button and `addEventListener`.
+
+#### Quality
+
+- **`event-bus.js` crash (`src/core/event-bus.js`):** `getListeners()` and `getStats()`
+  no longer throw `TypeError: this.onceListeners is not iterable`. Both methods now derive
+  their data from the single `this.listeners` Map, splitting entries by the `once` flag.
+- **`SweetAlert` deprecated (`src/utils/sweet-alert.js`):** the class now carries a
+  `@deprecated` JSDoc banner pointing users to `alertsPlugin`. The export is preserved
+  until v2.0 to avoid a breaking change.
+- **`String.prototype.substr` removed:** replaced with `slice` in
+  `src/components/base-component.js` and `src/utils/error-handler.js`.
+- **Shared `escapeHtml`:** the private duplicate copies in `src/plugins/icons/icons-plugin.js`
+  and `src/plugins/alerts/alerts-plugin.js` are replaced with imports from `src/utils/html.js`.
+- **`base-component.js` formatting:** fixed glued JSDoc/signatures and a stray `}}` at the
+  end of `cleanup()`.
+
+#### Documentation
+- `docs/components.md` — new "Escaping and XSS" section covering `html\`\``, `raw()`, and `escapeHtml()`.
+- `docs/router.md` — note on decoded params and the escaping requirement.
+- `README.md` — new "Security" section and CSP note; HTML escaping mentioned in feature list.
+- `docs/roadmap.md` — v1.9.2 items marked done.
+
+---
+
 ## [1.9.1] - 2026-06-23
 
 ### Fixed

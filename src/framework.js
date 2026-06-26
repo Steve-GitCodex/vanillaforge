@@ -13,7 +13,7 @@
  * - Build system
  * 
  * @author Stephen Musyoka - VanillaForge Creator
- * @version 1.9.0
+ * @version 1.9.2
  * @since 2025-06-15
  */
 
@@ -322,5 +322,5 @@ export function createApp(config = {}) {
 }
 
 // Framework metadata
-export const FRAMEWORK_VERSION = '1.9.1';
+export const FRAMEWORK_VERSION = '1.9.2';
 export const FRAMEWORK_NAME = 'VanillaForge';

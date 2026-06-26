@@ -7,6 +7,75 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.10.0] - 2026-06-26
+
+This release adds the HTTP plugin, computed signals, expanded navigation guard
+documentation, and Laravel-inspired CLI `add` subcommands.
+
+### Added
+
+#### HTTP plugin (`src/plugins/http/http-plugin.js`)
+- `httpPlugin` — install with `app.use(httpPlugin, { baseURL: '/api', headers: {} })`.
+- `HttpService.get/post/put/patch/delete(url, body?, opts?)` — all return parsed
+  JSON or text; pass `{ raw: true }` to receive the raw `Response` object.
+- Automatic `Content-Type: application/json` for object bodies; `FormData` and
+  `URLSearchParams` pass through without serialisation.
+- `setHeader(name, value)` / `removeHeader(name)` — mutate defaults for all
+  subsequent requests (useful for token refresh).
+- `addInterceptor({ request?, response?, error? })` — returns `this` for chaining;
+  interceptors run in registration order.
+- Non-2xx responses throw an `Error` with `.status`, `.statusText`, and `.body`
+  properties (parsed JSON when available, text otherwise).
+- Exported from `vanillaforge` as `httpPlugin` and `HttpService`.
+- Full TypeScript types (`HttpService`, `HttpInterceptor`, `HttpError`,
+  `RequestOptions`, `HttpPluginOptions`) added to `types/index.d.ts`.
+- `tests/http.test.js` — 26 tests covering all verbs, headers, errors, interceptors,
+  and plugin installation.
+- New `docs/http.md` — full API reference, route-loader usage, token-refresh example.
+- `docs/plugins.md` — new "HTTP plugin" section.
+- `README.md` — HTTP plugin mentioned in features list and docs index.
+
+#### Computed signals (`src/core/signal.js`)
+- `computed(fn, dependencies)` — returns a derived `Signal<T>` that recomputes
+  whenever any dependency signal changes.
+- Reuses existing `Object.is` equality — identical derived values fire no subscribers.
+- Cleanup: `_destroy()` on the computed signal removes all dependency subscriptions
+  (BaseComponent calls this automatically on teardown).
+- Exported from `vanillaforge` as `computed`.
+- TypeScript: `computed<T>(fn: () => T, deps: Signal<any>[]): Signal<T>` added to
+  `types/index.d.ts`.
+- `tests/signals.test.js` — 7 new `computed` test cases.
+- New `docs/signals.md` — full `signal()` + `computed()` API reference and patterns.
+- `README.md` — computed signals mentioned in features list.
+
+#### Navigation guards — documentation
+- `docs/router.md` — expanded "Navigation Guards" section with:
+  - Global guard via `app.router.beforeNavigation(async (route, path) => boolean)`
+  - Per-route `beforeEnter` in the route config object
+  - Auth redirect and loading indicator patterns
+- `create-vanillaforge/templates/router-app/src/app.js` — commented-out guard
+  example so scaffolded router-apps show the pattern immediately.
+- `docs/roadmap.md` — guards moved to "Done (v1.10)".
+
+#### CLI `add` subcommands (`create-vanillaforge`)
+- `npx create-vanillaforge add component <name>` — scaffolds
+  `src/components/<name>-component.js` from a minimal BaseComponent template and
+  prints the import + registration snippet.
+- `npx create-vanillaforge add route <path> <name>` — scaffolds a route-aware
+  component (with `this.props.data` loader comment) and prints the route config
+  snippet for `app.js`.
+- `npx create-vanillaforge add plugin <name>` — scaffolds
+  `src/plugins/<name>/<name>-plugin.js` with plugin boilerplate and prints the
+  `app.use()` install snippet.
+- All `add` commands verify that `vanillaforge` is listed in the current
+  directory's `package.json` and exit with a friendly error otherwise.
+- Names accepted in any casing (kebab-case, PascalCase, camelCase); normalised
+  to kebab-case for file names and PascalCase for class names automatically.
+- New fragment templates in `create-vanillaforge/templates/fragments/`.
+- `create-vanillaforge` bumped to **v1.1.0**.
+- `docs/cli.md` — new "Adding files to an existing project" section.
+- `create-vanillaforge/README.md` — matching "Adding files" section.
+
 ## [1.9.2] - 2026-06-26
 
 This release hardens the framework against XSS, removes CSP-hostile patterns, and

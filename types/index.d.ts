@@ -85,6 +85,23 @@ export declare class Signal<T = unknown> {
   subscribe(fn: (value: T) => void): () => void;
 }
 
+/**
+ * Create a derived signal whose value is recomputed whenever any dependency
+ * signal changes. The returned signal is read-only by convention.
+ *
+ * Auto-cleanup: calling `_destroy()` on the returned signal (done automatically
+ * by BaseComponent on teardown) unsubscribes from all dependencies.
+ *
+ * @example
+ * this.firstName = this.signal('John');
+ * this.lastName  = this.signal('Doe');
+ * this.fullName  = computed(
+ *   () => `${this.firstName.value} ${this.lastName.value}`,
+ *   [this.firstName, this.lastName],
+ * );
+ */
+export declare function computed<T>(fn: () => T, dependencies: Signal<any>[]): Signal<T>;
+
 // ---------------------------------------------------------------------------
 // Shared primitives
 // ---------------------------------------------------------------------------
@@ -556,6 +573,73 @@ export declare class StoreService {
 }
 
 export declare const storePlugin: Plugin;
+
+// ---------------------------------------------------------------------------
+// HTTP plugin
+// ---------------------------------------------------------------------------
+
+export interface HttpInterceptor {
+  /**
+   * Runs before fetch(). May mutate and return the RequestInit object.
+   * Use this to inject auth headers, sign requests, etc.
+   */
+  request?: (init: RequestInit & { headers: Record<string, string> }) => RequestInit | Promise<RequestInit>;
+
+  /**
+   * Runs after a successful (2xx) fetch. May return a replacement Response.
+   * Use this to unwrap envelopes or log responses.
+   */
+  response?: (response: Response) => Response | Promise<Response>;
+
+  /**
+   * Runs on non-2xx responses and network errors.
+   * Use this to show a global error toast or refresh a token.
+   */
+  error?: (err: HttpError | Error) => void | Promise<void>;
+}
+
+export interface HttpError extends Error {
+  status: number;
+  statusText: string;
+  /** Parsed JSON body, raw text, or null when the body could not be read. */
+  body: unknown;
+}
+
+export interface RequestOptions extends Omit<RequestInit, 'headers' | 'method' | 'body'> {
+  /** Per-request headers merged on top of the service defaults. */
+  headers?: Record<string, string>;
+  /** When true, the raw Response object is returned instead of parsed data. */
+  raw?: boolean;
+}
+
+export declare class HttpService {
+  constructor(baseURL?: string, defaultHeaders?: Record<string, string>, interceptors?: HttpInterceptor[]);
+
+  get(url: string, options?: RequestOptions): Promise<unknown>;
+  post(url: string, body?: unknown, options?: RequestOptions): Promise<unknown>;
+  put(url: string, body?: unknown, options?: RequestOptions): Promise<unknown>;
+  patch(url: string, body?: unknown, options?: RequestOptions): Promise<unknown>;
+  delete(url: string, options?: RequestOptions): Promise<unknown>;
+
+  /** Set (or overwrite) a default header sent with every request. */
+  setHeader(name: string, value: string): void;
+  /** Remove a default header. */
+  removeHeader(name: string): void;
+
+  /** Register an interceptor. Returns `this` for chaining. */
+  addInterceptor(interceptor: HttpInterceptor): this;
+}
+
+export interface HttpPluginOptions {
+  /** Prepended to all relative URLs. Default: ''. */
+  baseURL?: string;
+  /** Default headers sent with every request. Default: {}. */
+  headers?: Record<string, string>;
+  /** Initial interceptors. Default: []. */
+  interceptors?: HttpInterceptor[];
+}
+
+export declare const httpPlugin: Plugin;
 
 // ---------------------------------------------------------------------------
 // Constants

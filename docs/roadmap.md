@@ -1,5 +1,50 @@
 # VanillaForge — Roadmap
 
+## Done (v1.10 — DX bundle)
+
+### HTTP plugin
+- `httpPlugin` — install with `app.use(httpPlugin, { baseURL: '/api' })`.
+- `get()`, `post()`, `put()`, `patch()`, `delete()` — all return parsed JSON or
+  text; pass `{ raw: true }` for the raw Response.
+- Default headers: `setHeader(name, value)` / `removeHeader(name)`.
+- Interceptors: `addInterceptor({ request?, response?, error? })` — chainable,
+  run in registration order.
+- Automatic `Content-Type: application/json` for object bodies.
+- Non-2xx responses throw with `.status`, `.statusText`, and `.body`.
+- Exported from `vanillaforge` as `httpPlugin` + `HttpService`.
+- Full TypeScript types in `types/index.d.ts`.
+- See `docs/http.md` for full API reference.
+
+### Computed signals
+- `computed(fn, dependencies)` — returns a derived `Signal` that recomputes
+  whenever any dependency signal changes.
+- Reuses existing `Object.is` equality check — no notification when the derived
+  value is unchanged.
+- Auto-cleanup: calling `_destroy()` on the computed signal removes all
+  dependency subscriptions (BaseComponent does this automatically on teardown).
+- Exported from `vanillaforge` as `computed`.
+- Full TypeScript generic: `computed<T>(fn: () => T, deps: Signal<any>[]): Signal<T>`.
+- See `docs/signals.md` for full API reference.
+
+### Navigation guards — documentation
+- `docs/router.md` expanded with a "Navigation Guards" section covering:
+  global `app.router.beforeNavigation(async (route, path) => boolean)`,
+  per-route `beforeEnter` in route config, and a loading-indicator pattern.
+- `router-app` scaffold template now includes a commented-out guard example.
+
+### CLI `add` subcommands
+- `npx create-vanillaforge add component <name>` — creates `src/components/<name>-component.js`.
+- `npx create-vanillaforge add route <path> <name>` — creates a route-aware component
+  with a loader comment; prints the route config snippet for `app.js`.
+- `npx create-vanillaforge add plugin <name>` — creates `src/plugins/<name>/<name>-plugin.js`
+  with plugin boilerplate; prints the install snippet.
+- All commands detect that you are inside a VanillaForge project (checks `package.json`).
+- Names accepted in any casing (kebab, PascalCase, camelCase); normalised internally.
+- `create-vanillaforge` bumped to v1.1.0.
+- See `docs/cli.md` for the full reference.
+
+---
+
 This is the living plan for VanillaForge's evolution toward a batteries-included framework where
 developers don't need Font Awesome, Tailwind, Bootstrap, Google Fonts, or SweetAlert — while
 remaining free to bring those libraries in if they want to.

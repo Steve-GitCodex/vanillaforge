@@ -41,6 +41,35 @@
  *   release.
  */
 
+/**
+ * Create a derived signal whose value is recomputed whenever any dependency
+ * signal changes.
+ *
+ * The returned Signal is read-only by convention — do not call .set() on it.
+ * It is auto-destroyed (subscriptions cleared) when _destroy() is called,
+ * which BaseComponent does automatically when it is torn down.
+ *
+ * @template T
+ * @param {() => T} fn - Pure function that computes the derived value.
+ * @param {Signal<any>[]} dependencies - Signals to watch.
+ * @returns {Signal<T>}
+ *
+ * @example
+ * this.firstName = this.signal('John');
+ * this.lastName  = this.signal('Doe');
+ * this.fullName  = computed(
+ *   () => `${this.firstName.value} ${this.lastName.value}`,
+ *   [this.firstName, this.lastName],
+ * );
+ */
+export function computed(fn, dependencies) {
+  const sig = new Signal(fn());
+  const unsubs = dependencies.map(dep => dep.subscribe(() => sig.set(fn())));
+  const origDestroy = sig._destroy.bind(sig);
+  sig._destroy = () => { unsubs.forEach(u => u()); origDestroy(); };
+  return sig;
+}
+
 export class Signal {
   /**
    * @param {*} initialValue

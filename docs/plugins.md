@@ -562,3 +562,60 @@ getLifecycle() {
   time if they only register services.
 - A later `app.use()` or `app.provide()` with the same service name **replaces** the earlier
   one, so third-party overrides always win.
+
+---
+
+## HTTP plugin
+
+The `httpPlugin` provides a fetch wrapper with base URL support, default headers,
+and a chainable interceptor system. See the full [HTTP Plugin reference](http.md).
+
+### Install
+
+```js
+import { createApp, httpPlugin } from 'vanillaforge';
+
+const app = createApp({ appName: 'My App' });
+
+app.use(httpPlugin, {
+  baseURL: '/api',
+  headers: { 'Authorization': `Bearer ${token}` },
+});
+```
+
+### Use in a component
+
+```js
+async onInit() {
+  const http = this.service('http');
+  const users = await http.get('/users');
+  this.setState({ users });
+}
+```
+
+### Use in a route loader
+
+```js
+await app.initialize({
+  routes: {
+    '/users/:id': {
+      component: UserDetailComponent,
+      loader: async ({ params }) => app.get('http').get(`/users/${params.id}`),
+    },
+  },
+});
+```
+
+### Add an auth interceptor
+
+```js
+app.get('http').addInterceptor({
+  request: (init) => {
+    init.headers['Authorization'] = `Bearer ${getToken()}`;
+    return init;
+  },
+  error: (err) => {
+    if (err.status === 401) app.navigate('/login');
+  },
+});
+```

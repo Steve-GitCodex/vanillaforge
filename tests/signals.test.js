@@ -7,7 +7,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Signal } from '../src/core/signal.js';
+import { Signal, computed } from '../src/core/signal.js';
 import { BaseComponent } from '../src/components/base-component.js';
 import { EventBus } from '../src/core/event-bus.js';
 
@@ -255,6 +255,69 @@ describe('BaseComponent — this.signal()', () => {
     await c.setState({}); // explicit setState between signal updates
     await flush();
     expect(c.querySelector('.v').textContent).toBe('3');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// computed()
+// ---------------------------------------------------------------------------
+
+describe('computed', () => {
+  it('returns the initial derived value', () => {
+    const a = new Signal(2);
+    const b = new Signal(3);
+    const sum = computed(() => a.value + b.value, [a, b]);
+    expect(sum.value).toBe(5);
+  });
+
+  it('recomputes when a dependency changes', () => {
+    const a = new Signal(1);
+    const c = computed(() => a.value * 10, [a]);
+    a.set(4);
+    expect(c.value).toBe(40);
+  });
+
+  it('recomputes when any of multiple dependencies change', () => {
+    const x = new Signal('Hello');
+    const y = new Signal('World');
+    const msg = computed(() => `${x.value} ${y.value}`, [x, y]);
+    y.set('VanillaForge');
+    expect(msg.value).toBe('Hello VanillaForge');
+  });
+
+  it('notifies subscribers of the computed signal', () => {
+    const a = new Signal(0);
+    const doubled = computed(() => a.value * 2, [a]);
+    const received = [];
+    doubled.subscribe((v) => received.push(v));
+    a.set(5);
+    a.set(7);
+    expect(received).toEqual([10, 14]);
+  });
+
+  it('uses Object.is — no notification when derived value is unchanged', () => {
+    const a = new Signal(1);
+    const always1 = computed(() => 1, [a]);
+    const fn = vi.fn();
+    always1.subscribe(fn);
+    a.set(2); // trigger recompute, but fn() → still 1
+    expect(fn).not.toHaveBeenCalled();
+  });
+
+  it('cleans up dependency subscriptions on _destroy()', () => {
+    const a = new Signal(0);
+    const c = computed(() => a.value, [a]);
+    const fn = vi.fn();
+    c.subscribe(fn);
+    c._destroy();
+    a.set(99);
+    expect(fn).not.toHaveBeenCalled();
+    expect(c.value).toBe(0); // frozen after destroy
+  });
+
+  it('is exported from src/framework.js', async () => {
+    const { computed: importedComputed } = await import('../src/framework.js');
+    expect(importedComputed).toBe(computed);
   });
 });
 

@@ -26,4 +26,15 @@ await app.initialize({
   },
 });
 
+// Navigation guard example — uncomment to protect routes:
+//
+// app.router.beforeNavigation(async (route, path) => {
+//   const isLoggedIn = await checkAuth();
+//   if (!isLoggedIn && path !== '/login') {
+//     app.navigate('/login');
+//     return false;
+//   }
+//   return true;
+// });
+
 await app.start();

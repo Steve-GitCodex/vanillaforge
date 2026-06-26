@@ -164,6 +164,101 @@ VS Code picks this up automatically.
 
 ---
 
+## Adding files to an existing project
+
+Once you have a project, you can scaffold new files without leaving the
+terminal. Run these commands from the **root of your VanillaForge project**:
+
+```bash
+# Add a plain component
+npx create-vanillaforge add component <name>
+
+# Add a route component (includes loader comment)
+npx create-vanillaforge add route <path> <name>
+
+# Add a plugin boilerplate
+npx create-vanillaforge add plugin <name>
+```
+
+The CLI writes the file, then prints the exact import and registration
+snippet you need to paste into `app.js`. It never modifies existing files.
+
+### `add component`
+
+```bash
+npx create-vanillaforge add component user-profile
+```
+
+Creates `src/components/user-profile-component.js` and prints:
+
+```
+Created  src/components/user-profile-component.js
+
+Add it to your app:
+
+  import { UserProfileComponent } from './components/user-profile-component.js';
+
+  // In app.initialize({ components: { ... } }):
+  user-profile: UserProfileComponent
+```
+
+### `add route`
+
+```bash
+npx create-vanillaforge add route /users/:id user-detail
+```
+
+Creates `src/components/user-detail-component.js` (a route-aware component
+with a `this.props.data` loader comment) and prints the route config snippet:
+
+```
+Created  src/components/user-detail-component.js
+
+Add it to your routes in app.js:
+
+  import { UserDetailComponent } from './components/user-detail-component.js';
+
+  // In app.initialize({ routes: { ... } }):
+  '/users/:id': {
+    component: UserDetailComponent,
+    // loader: async ({ params }) => fetchData(params),
+  },
+```
+
+### `add plugin`
+
+```bash
+npx create-vanillaforge add plugin auth
+```
+
+Creates `src/plugins/auth/auth-plugin.js` with the standard plugin boilerplate
+and prints the install snippet:
+
+```
+Created  src/plugins/auth/auth-plugin.js
+
+Register it in app.js:
+
+  import { authPlugin } from './plugins/auth/auth-plugin.js';
+  app.use(authPlugin);
+
+Access from a component:
+  const svc = this.service('auth');
+```
+
+### Name formats
+
+The `<name>` argument is accepted in any casing — kebab-case, PascalCase, or
+camelCase. The CLI normalises it internally:
+
+| Input | File | Class |
+|-------|------|-------|
+| `user-profile` | `user-profile-component.js` | `UserProfileComponent` |
+| `UserProfile` | `user-profile-component.js` | `UserProfileComponent` |
+| `userProfile` | `user-profile-component.js` | `UserProfileComponent` |
+
+---
+
 ## FAQ
 
 **The dev server opens `index.html` but the app is blank.**  

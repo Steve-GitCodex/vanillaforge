@@ -15,12 +15,14 @@ optimized bundle.
 
 - **Zero runtime dependencies** — ships as plain ES modules.
 - **Small** — the core is ~14.5 KB min+gzip (~48 KB minified).
-- **Batteries-included** — icons, CSS/theming, alerts, self-hosted fonts, and a
-  shared reactive store, all built in. No Font Awesome, Bootstrap, SweetAlert, or
-  Google Fonts required — but you can still bring them in if you want.
+- **Batteries-included** — icons, CSS/theming, alerts, self-hosted fonts, a shared
+  reactive store, and an HTTP fetch wrapper, all built in. No Font Awesome, Bootstrap,
+  SweetAlert, or Google Fonts required — but you can still bring them in if you want.
+- **Reactive signals** — `this.signal(value)` for fine-grained reactivity;
+  `computed(fn, deps)` for derived values that update automatically.
 - **Component composition** — embed child components directly inside parent
   templates. Each child has isolated state, props, lifecycle, and event handling.
-- **Plugin system** — every subsystem (icons, theme, alerts, fonts, store) is a
+- **Plugin system** — every subsystem (icons, theme, alerts, fonts, store, http) is a
   plugin you can install, replace, or skip.
 - **Efficient updates** — re-renders are applied with a tiny DOM-morphing diff,
   so only changed nodes are touched and focused inputs keep their cursor (see
@@ -184,9 +186,12 @@ and copies/minifies discovered CSS. See [docs/build-system.md](docs/build-system
 
 - [Components Guide](docs/components.md)
 - [Component Composition](docs/composition.md)
+- [Signals & Computed](docs/signals.md)
 - [Plugin System & Built-in Icons](docs/plugins.md)
+- [HTTP Plugin](docs/http.md)
 - [Routing System](docs/router.md)
 - [Event Bus](docs/event-bus.md)
+- [CLI Reference](docs/cli.md)
 - [API Reference](docs/API.md)
 - [Build System](docs/build-system.md)
 - [GitHub Pages](docs/github-pages.md)
@@ -226,9 +231,8 @@ Modern browsers with ES2020+ support: Chrome 80+, Firefox 72+, Safari 14+, Edge 
 
 ## Roadmap
 
-All five built-in plugins (icons, theme, alerts, fonts, store), component
-composition, signals, route loaders, TypeScript types, the scaffold CLI, and
-npm publication of both `vanillaforge` and `create-vanillaforge` are complete.
+See [docs/roadmap.md](docs/roadmap.md) for the full list of completed and planned features.
+Recent additions: HTTP plugin, computed signals, navigation guard docs, and CLI `add` subcommands.
 
 Full release history in [CHANGELOG.md](CHANGELOG.md).
 

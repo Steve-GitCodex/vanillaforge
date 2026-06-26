@@ -103,37 +103,84 @@ class NavigationComponent extends BaseComponent {
 }
 ```
 
-## Route Guards
+## Navigation Guards
 
-Route guards let you run code before navigation happens. This is useful for checking if users are logged in, or redirecting them based on permissions:
+Navigation guards let you intercept navigation before (or after) it happens. Use
+them for auth checks, role-based access, loading indicators, and analytics.
+
+### Global guards
+
+Register a global guard with `app.router.beforeNavigation()`. The callback runs
+before **every** navigation and must return `true` to allow it or `false` to
+cancel it. Async guards are fully supported.
 
 ```javascript
-// Check authentication before showing protected pages
-router.beforeNavigation((route, path) => {
-    // If trying to access admin pages but not logged in
-    if (path.startsWith('/admin') && !user.isLoggedIn) {
-        app.navigate('/login');
-        return false; // Block the navigation
-    }
-    
-    // If trying to access login page but already logged in
-    if (path === '/login' && user.isLoggedIn) {
-        app.navigate('/dashboard');
-        return false; // Block the navigation
-    }
-    
-    return true; // Allow the navigation
+// Auth guard — redirect unauthenticated users to /login
+app.router.beforeNavigation(async (route, path) => {
+  const isLoggedIn = await checkAuth(); // async is fine
+
+  if (!isLoggedIn && path !== '/login') {
+    app.navigate('/login');
+    return false; // cancel the original navigation
+  }
+
+  return true; // allow
 });
 
-// Run code after navigation completes
-router.afterNavigation((route, path) => {
-    console.log('User navigated to:', path);
-    
-    // Track page views for analytics
-    analytics.trackPageView(path);
-    
-    // Update page title
-    document.title = `My App - ${route.title || 'Page'}`;
+// Run code after every navigation (analytics, title update, etc.)
+app.router.afterNavigation((route, path) => {
+  document.title = `My App — ${route.title || path}`;
+  analytics?.trackPageView(path);
+});
+```
+
+You can register multiple `beforeNavigation` / `afterNavigation` callbacks — they
+run in registration order.
+
+### Per-route guards (`beforeEnter`)
+
+For route-specific logic (e.g. role checks on a single admin page) use
+`beforeEnter` in the route config object instead of a global guard:
+
+```javascript
+await app.initialize({
+  routes: {
+    '/': HomeComponent,
+
+    '/admin': {
+      component: AdminDashboard,
+      beforeEnter: async (route, path) => {
+        const role = await getCurrentRole();
+        if (role !== 'admin') {
+          app.navigate('/');
+          return false; // cancel
+        }
+        return true;
+      },
+    },
+
+    '/users/:id': {
+      component: UserDetail,
+      loader: async ({ params }) => fetchUser(params.id),
+    },
+  },
+});
+```
+
+`beforeEnter` runs **after** global `beforeNavigation` guards and **before** the
+route loader. If either returns `false`, navigation is cancelled and the component
+never mounts.
+
+### Loading indicator pattern
+
+```javascript
+app.router.beforeNavigation(() => {
+  document.body.classList.add('loading');
+  return true;
+});
+
+app.router.afterNavigation(() => {
+  document.body.classList.remove('loading');
 });
 ```
 

@@ -13,7 +13,7 @@
  * - Build system
  * 
  * @author Stephen Musyoka - VanillaForge Creator
- * @version 1.9.2
+ * @version 1.10.0
  * @since 2025-06-15
  */
 
@@ -38,8 +38,8 @@ export { PerformanceUtils, performanceUtils } from './utils/performance.js';
 export { perf, cache } from './utils/decorators.js';
 export { optimizeImage, batchDOMOperations } from './utils/dom.js';
 
-// Core reactive primitive
-export { Signal } from './core/signal.js';
+// Core reactive primitives
+export { Signal, computed } from './core/signal.js';
 
 // First-party plugins
 export { iconsPlugin, IconsService } from './plugins/icons/icons-plugin.js';
@@ -47,6 +47,7 @@ export { themePlugin, ThemeService } from './plugins/theme/theme-plugin.js';
 export { alertsPlugin, AlertsService } from './plugins/alerts/alerts-plugin.js';
 export { fontsPlugin, FontsService } from './plugins/fonts/fonts-plugin.js';
 export { storePlugin, StoreService } from './plugins/store/store-plugin.js';
+export { httpPlugin, HttpService } from './plugins/http/http-plugin.js';
 
 // Import classes for internal use
 import { ComponentManager } from './core/component-manager.js';
@@ -322,5 +323,5 @@ export function createApp(config = {}) {
 }
 
 // Framework metadata
-export const FRAMEWORK_VERSION = '1.9.2';
+export const FRAMEWORK_VERSION = '1.10.0';
 export const FRAMEWORK_NAME = 'VanillaForge';

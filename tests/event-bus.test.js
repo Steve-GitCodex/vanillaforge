@@ -47,4 +47,32 @@ describe('EventBus', () => {
     expect(() => bus.emit('e')).not.toThrow();
     expect(ok).toHaveBeenCalled();
   });
+
+  it('getListeners returns correct counts', () => {
+    const bus = new EventBus();
+    bus.on('ev', vi.fn());
+    bus.once('ev', vi.fn());
+    const info = bus.getListeners('ev');
+    expect(info.persistent).toBe(1);
+    expect(info.once).toBe(1);
+    expect(info.total).toBe(2);
+  });
+
+  it('getListeners returns zeros for unknown event', () => {
+    const bus = new EventBus();
+    const info = bus.getListeners('noop');
+    expect(info.total).toBe(0);
+  });
+
+  it('getStats returns correct totals', () => {
+    const bus = new EventBus();
+    bus.on('a', vi.fn());
+    bus.on('a', vi.fn());
+    bus.once('b', vi.fn());
+    const stats = bus.getStats();
+    expect(stats.totalEvents).toBe(2);
+    expect(stats.totalListeners).toBe(3);
+    expect(stats.eventStats['a'].total).toBe(2);
+    expect(stats.eventStats['b'].once).toBe(1);
+  });
 });

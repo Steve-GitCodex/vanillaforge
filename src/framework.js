@@ -25,6 +25,9 @@ export { EventBus } from './core/event-bus.js';
 // Base Classes
 export { BaseComponent } from './components/base-component.js';
 
+// HTML escaping utilities
+export { html, raw, escapeHtml, RawHtml } from './utils/html.js';
+
 // Utilities
 export { Logger } from './utils/logger.js';
 export { ErrorHandler, ErrorType } from './utils/error-handler.js';

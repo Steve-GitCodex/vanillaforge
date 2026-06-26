@@ -13,6 +13,47 @@
  */
 
 // ---------------------------------------------------------------------------
+// HTML escaping utilities
+// ---------------------------------------------------------------------------
+
+/**
+ * Wraps a trusted HTML string so the `html` tagged template passes it through
+ * without escaping. Returned by `raw()`, `icon()`, and `child()`.
+ * Its `toString()` returns the raw string, so it is safe to use in plain
+ * template literals too.
+ */
+export declare class RawHtml {
+  constructor(value: unknown);
+  toString(): string;
+}
+
+/**
+ * Escape a value for safe insertion into HTML text or attribute values.
+ * Escapes `& < > " '`.  Returns an empty string for null/undefined.
+ */
+export declare function escapeHtml(value: unknown): string;
+
+/**
+ * Mark a trusted HTML string so the `html` tagged template will not escape it.
+ * Only use this on values you fully control (SVG strings, framework output, etc.)
+ * — never on user-supplied data.
+ */
+export declare function raw(value: unknown): RawHtml;
+
+/**
+ * Tagged template literal that auto-escapes every interpolated value.
+ * `RawHtml` instances (from `raw()`, `this.icon()`, `this.child()`) are passed
+ * through unchanged.  Arrays are joined — each element is individually escaped.
+ *
+ * @example
+ * getTemplate() {
+ *   return html`<h1>${this.state.title}</h1>
+ *     <button>${this.icon('check')} ${this.state.label}</button>`;
+ * }
+ */
+export declare function html(strings: TemplateStringsArray, ...values: unknown[]): string;
+
+// ---------------------------------------------------------------------------
 // Signal — reactive primitive
 // ---------------------------------------------------------------------------
 

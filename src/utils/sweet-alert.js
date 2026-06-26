@@ -1,11 +1,11 @@
 /**
  * SweetAlert2 Utility
- * 
- * Wrapper for SweetAlert2 to ensure it's available and provide consistent styling
- * 
- * @author VanillaForge Team
- * @version 3.0.0
- * @since 2025-06-14
+ *
+ * @deprecated Use the built-in alertsPlugin instead:
+ *   app.use(alertsPlugin);
+ *   this.service('alerts').confirm('Are you sure?');
+ * This class wraps an external SweetAlert2 dependency that is not included in
+ * VanillaForge. It will be removed in v2.0.0.
  */
 
 export class SweetAlert {

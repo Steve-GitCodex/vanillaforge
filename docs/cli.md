@@ -115,18 +115,17 @@ my-app/
 
 ## How the framework dependency works
 
-Generated projects use a GitHub git dependency:
+Generated projects install `vanillaforge` from npm:
 
 ```json
 {
   "dependencies": {
-    "vanillaforge": "github:Steve-GitCodex/vanillaforge"
+    "vanillaforge": "^1.9.0"
   }
 }
 ```
 
-`npm install` clones the repo into `node_modules/vanillaforge`. The
-generated `index.html` maps the bare specifier `'vanillaforge'` to the
+The generated `index.html` maps the bare specifier `'vanillaforge'` to the
 installed source via an [Import Map](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/script/type/importmap):
 
 ```html
@@ -143,12 +142,6 @@ This means:
 - **No build step** is needed in development.
 - The browser resolves all framework modules from `node_modules/` at runtime.
 - Supported in Chrome 89+, Firefox 108+, Safari 16.4+.
-
-When vanillaforge is published to npm, switch the dependency with:
-
-```bash
-npm install vanillaforge
-```
 
 ---
 

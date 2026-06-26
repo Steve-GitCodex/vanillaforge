@@ -109,3 +109,26 @@ describe('Router navigation', () => {
     expect(loaded).toHaveBeenCalled();
   });
 });
+
+describe('Router param decoding', () => {
+  it('decodes percent-encoded path segments', () => {
+    const r = makeRouter();
+    const { isMatch, params } = r.matchesRoute('/users/John%20Doe', '/users/:id');
+    expect(isMatch).toBe(true);
+    expect(params.id).toBe('John Doe');
+  });
+
+  it('decodes special characters', () => {
+    const r = makeRouter();
+    const { params } = r.matchesRoute('/search/caf%C3%A9', '/search/:q');
+    expect(params.q).toBe('café');
+  });
+
+  it('falls back to raw segment on malformed percent-encoding', () => {
+    const r = makeRouter();
+    const { isMatch, params } = r.matchesRoute('/users/%E0%A4%A', '/users/:id');
+    expect(isMatch).toBe(true);
+    // Must not throw; raw segment is kept.
+    expect(typeof params.id).toBe('string');
+  });
+});

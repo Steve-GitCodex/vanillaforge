@@ -1,4 +1,4 @@
-import { BaseComponent } from 'vanillaforge';
+import { BaseComponent, escapeHtml } from 'vanillaforge';
 
 export class UserDetail extends BaseComponent {
   constructor(eventBus, props = {}) {
@@ -30,13 +30,13 @@ export class UserDetail extends BaseComponent {
           ${this.icon('arrow-left', { size: 16 })} Back to people
         </a>
         <div class="detail-header">
-          <div class="detail-avatar">${user.name.charAt(0)}</div>
+          <div class="detail-avatar">${escapeHtml(user.name.charAt(0))}</div>
           <div>
-            <h1>${user.name}</h1>
-            <p style="color:var(--vf-primary);font-weight:600;margin-top:2px">${user.role}</p>
+            <h1>${escapeHtml(user.name)}</h1>
+            <p style="color:var(--vf-primary);font-weight:600;margin-top:2px">${escapeHtml(user.role)}</p>
           </div>
         </div>
-        <p>${user.bio}</p>
+        <p>${escapeHtml(user.bio)}</p>
       </section>`;
   }
 }

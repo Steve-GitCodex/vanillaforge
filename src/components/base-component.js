@@ -20,6 +20,7 @@ import { Logger } from '../utils/logger.js';
 import { ErrorHandler } from '../utils/error-handler.js';
 import { morph } from '../core/dom-morph.js';
 import { Signal } from '../core/signal.js';
+import { RawHtml, raw } from '../utils/html.js';
 
 /**
  * Base Component Class
@@ -102,7 +103,8 @@ export class BaseComponent {
      * event listeners, validate props, and perform initial rendering.
      * 
      * @returns {Promise<void>}
-     */    async init() {
+     */
+    async init() {
         if (this.isInitialized) {
             this.logger.warn('Component already initialized');
             return;
@@ -137,9 +139,11 @@ export class BaseComponent {
             this.handleError(error, 'Component initialization failed');
             throw error;
         }
-    }/**
+    }
+
+    /**
      * Render the component
-     * 
+     *
      * This method generates and inserts the component's HTML into the container.
      * It handles the complete rendering lifecycle including cleanup of existing content.
      * 
@@ -246,7 +250,9 @@ export class BaseComponent {
             this.handleError(error, 'Props update failed');
             throw error;
         }
-    }    /**
+    }
+
+    /**
      * Update component state and trigger re-render if needed
      * 
      * @param {Object} newState - New state to merge with existing state
@@ -344,7 +350,9 @@ export class BaseComponent {
         } catch (error) {
             this.handleError(error, 'Component destruction failed');
         }
-    }    /**
+    }
+
+    /**
      * Add event listener to an element with automatic cleanup
      * 
      * @param {HTMLElement|string} target - Element or selector to attach event to
@@ -383,7 +391,7 @@ export class BaseComponent {
             element.addEventListener(event, wrappedHandler, options);
 
             // Store for cleanup with a more unique key
-            const key = `${element.tagName}-${event}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+            const key = `${element.tagName}-${event}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
             this.eventListeners.set(key, {
                 element,
                 event,
@@ -530,9 +538,11 @@ export class BaseComponent {
             // Add to document head
             document.head.appendChild(link);
         });
-    }    /**
+    }
+
+    /**
      * Unload CSS file
-     * 
+     *
      * @param {string} cssPath - Path to the CSS file
      */
     unloadCSS(cssPath) {
@@ -540,7 +550,9 @@ export class BaseComponent {
         if (link) {
             link.remove();
         }
-    }    /**
+    }
+
+    /**
      * Auto-load CSS for component based on naming convention
      * Looks for CSS files in: styles/components/{component-name}.css
      * 
@@ -633,7 +645,8 @@ export class BaseComponent {
 
         this._childSpecs.push({ ComponentClass, props, key: resolvedKey });
 
-        return `<div data-vf-host="${index}" data-key="${resolvedKey}"></div>`;
+        // Return RawHtml so the placeholder is not escaped in html`` templates.
+        return raw(`<div data-vf-host="${index}" data-key="${resolvedKey}"></div>`);
     }
 
     /**
@@ -723,7 +736,8 @@ export class BaseComponent {
      */
     icon(name, opts = {}) {
         const icons = this.service('icons');
-        return icons ? icons.render(name, opts) : '';
+        // Return RawHtml so the value is not double-escaped in html`` templates.
+        return icons ? raw(icons.render(name, opts)) : new RawHtml('');
     }
 
     // ===========================
@@ -756,10 +770,12 @@ export class BaseComponent {
      */
     onDestroy() {
         // Override in subclasses
-    }    /**
+    }
+
+    /**
      * Generate component HTML
      * MUST be implemented in subclasses
-     * 
+     *
      * @returns {Promise<string>} Component HTML string
      */
     async getHTML() {
@@ -932,4 +948,5 @@ export class BaseComponent {
         for (const sig of this._signals) sig._destroy();
         this._signals = [];
         this._signalRenderPending = false;
-    }}
+    }
+}

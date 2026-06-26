@@ -311,7 +311,12 @@ export class Router {
 
     const isMatch = routeParts.every((part, index) => {
       if (part.startsWith(':')) {
-        params[part.substring(1)] = pathParts[index];
+        try {
+          params[part.substring(1)] = decodeURIComponent(pathParts[index]);
+        } catch (_e) {
+          // Malformed percent-encoding — use the raw segment.
+          params[part.substring(1)] = pathParts[index];
+        }
         return true;
       }
       return part === pathParts[index];

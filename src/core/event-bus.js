@@ -117,59 +117,43 @@ export class EventBus {
 
 
   /**
-   * Get all listeners for an event
-   * 
+   * Get all listeners for an event.
+   *
    * @param {string} event - Event name
-   * @returns {Array} Array of listener objects
+   * @returns {{ persistent: number, once: number, total: number }}
    */
   getListeners(event) {
-    const regular = this.listeners.get(event) || [];
-    const once = this.onceListeners.get(event) || [];
-    
+    const all = this.listeners.get(event) || [];
+    const persistent = all.filter(l => !l.once);
+    const once = all.filter(l => l.once);
     return {
-      regular: regular.map(l => ({
-        id: l.id,
-        priority: l.priority,
-        createdAt: l.createdAt
-      })),
-      once: once.map(l => ({
-        id: l.id,
-        priority: l.priority,
-        createdAt: l.createdAt
-      }))
+      persistent: persistent.length,
+      once: once.length,
+      total: all.length,
     };
   }
 
   /**
-   * Get event statistics
-   * 
+   * Get event statistics.
+   *
    * @returns {Object} Event bus statistics
    */
   getStats() {
-    const allEvents = new Set([
-      ...this.listeners.keys(),
-      ...this.onceListeners.keys()
-    ]);
-    
     const eventStats = {};
-    for (const event of allEvents) {
-      const regular = this.listeners.get(event) || [];
-      const once = this.onceListeners.get(event) || [];
-      
-      eventStats[event] = {
-        regularListeners: regular.length,
-        onceListeners: once.length,
-        total: regular.length + once.length
-      };
+    let totalListeners = 0;
+
+    for (const [event, listeners] of this.listeners) {
+      const persistent = listeners.filter(l => !l.once).length;
+      const once = listeners.filter(l => l.once).length;
+      eventStats[event] = { persistent, once, total: listeners.length };
+      totalListeners += listeners.length;
     }
-    
+
     return {
-      totalEvents: allEvents.size,
-      totalListeners: Array.from(allEvents).reduce((sum, event) => {
-        return sum + eventStats[event].total;
-      }, 0),
+      totalEvents: this.listeners.size,
+      totalListeners,
       eventStats,
-      historySize: this.eventHistory.length
+      historySize: this.eventHistory.length,
     };
   }
 

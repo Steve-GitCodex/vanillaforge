@@ -48,17 +48,26 @@ async function initializeApp() {
     window.app = app;
   } catch (error) {
     console.error('Failed to initialize VanillaForge app:', error);
-    document.getElementById('main-content').innerHTML = `
-      <div style="padding: 40px; text-align: center; color: #dc3545;">
-        <h2>Failed to Load</h2>
-        <p>Error: ${error.message}</p>
-        <p style="margin-top: 20px;">
-          <button onclick="location.reload()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
-            Retry
-          </button>
-        </p>
-      </div>
-    `;
+    const mount = document.getElementById('main-content');
+    if (mount) {
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'padding:40px;text-align:center;color:#dc3545';
+
+      const heading = document.createElement('h2');
+      heading.textContent = 'Failed to Load';
+
+      const msg = document.createElement('p');
+      msg.textContent = `Error: ${error.message}`;
+
+      const retryBtn = document.createElement('button');
+      retryBtn.textContent = 'Retry';
+      retryBtn.style.cssText = 'padding:10px 20px;background:#007bff;color:white;border:none;border-radius:4px;cursor:pointer;margin-top:20px';
+      retryBtn.addEventListener('click', () => window.location.reload());
+
+      wrapper.append(heading, msg, retryBtn);
+      mount.innerHTML = '';
+      mount.appendChild(wrapper);
+    }
   }
 }
 

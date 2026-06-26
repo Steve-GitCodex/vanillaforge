@@ -31,6 +31,8 @@
  * with plain-CSS fallback values so they look fine without it.
  */
 
+import { escapeHtml } from '../../utils/html.js';
+
 // ---------------------------------------------------------------------------
 // Minimal inline SVGs for toast type indicators
 // ---------------------------------------------------------------------------
@@ -414,14 +416,4 @@ export const alertsPlugin = {
   },
 };
 
-// ---------------------------------------------------------------------------
-// Private helpers
-// ---------------------------------------------------------------------------
-
-function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
+// escapeHtml is imported from src/utils/html.js at the top of this file

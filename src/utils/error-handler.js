@@ -406,7 +406,7 @@ export class ErrorHandler {  /**
    * @returns {string} Unique error ID
    */
   generateErrorId() {
-    return `err_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `err_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
   }
 
   /**

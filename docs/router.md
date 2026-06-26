@@ -54,13 +54,19 @@ class UserComponent extends BaseComponent {
         if (!this.state.user) return '<div>Loading…</div>';
         return `
             <div class="user-profile">
-                <h1>User: ${this.state.user.name}</h1>
-                <p>User ID: ${this.props.route.params.id}</p>
+                <h1>User: ${escapeHtml(this.state.user.name)}</h1>
+                <p>User ID: ${escapeHtml(this.props.route.params.id)}</p>
             </div>
         `;
     }
 }
 ```
+
+> **Params are URL-decoded.** The router runs `decodeURIComponent` on every
+> dynamic segment, so `/users/John%20Doe` gives `params.id === 'John Doe'`.
+> Always escape params before interpolating them into templates — use
+> `escapeHtml()` or the `html` tagged template (see the
+> [Components — Escaping and XSS](components.md#escaping-and-xss) section).
 
 ## Navigation
 

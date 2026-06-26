@@ -23,6 +23,7 @@
  */
 
 import { defaultIcons } from './default-icons.js';
+import { escapeHtml } from '../../utils/html.js';
 
 /**
  * Service that stores and renders inline SVG icons.
@@ -119,12 +120,4 @@ export const iconsPlugin = {
     },
 };
 
-// ---- private helpers ----
-
-function escapeHtml(str) {
-    return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/"/g, '&quot;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-}
+// escapeHtml is imported from src/utils/html.js

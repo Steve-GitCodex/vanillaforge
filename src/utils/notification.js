@@ -3,6 +3,8 @@
  *
  * Handles displaying messages to the user, such as toasts and modals.
  */
+import { escapeHtml } from './html.js';
+
 export class Notification {
   /**
    * Show a toast notification
@@ -68,23 +70,30 @@ export class Notification {
   showModal(title, message, options = {}) {
     const modal = document.createElement('div');
     modal.className = 'modal-overlay';
+    const buttons = options.buttons || [{ label: 'Close', action: 'close' }];
+    const btnHtml = buttons.map(btn => {
+      // Validate action to a safe identifier before using in a selector.
+      const safeAction = String(btn.action).replace(/[^a-zA-Z0-9_-]/g, '');
+      return `<button class="modal-btn-${safeAction}">${escapeHtml(btn.label)}</button>`;
+    }).join('');
+
     modal.innerHTML = `
       <div class="modal">
         <div class="modal-header">
-          <h3>${title}</h3>
+          <h3>${escapeHtml(title)}</h3>
           <button class="modal-close">&times;</button>
         </div>
         <div class="modal-body">
-          <p>${message}</p>
+          <p>${escapeHtml(message)}</p>
           ${options.details ? `
           <details style="margin-top: 16px;">
             <summary>Technical Details</summary>
-            <pre style="font-size: 12px; margin-top: 8px;">${options.details}</pre>
+            <pre style="font-size: 12px; margin-top: 8px;">${escapeHtml(options.details)}</pre>
           </details>
           ` : ''}
         </div>
         <div class="modal-footer">
-          ${(options.buttons || [{ label: 'Close', action: 'close' }]).map(btn => `<button class="modal-btn-${btn.action}">${btn.label}</button>`).join('')}
+          ${btnHtml}
         </div>
       </div>
     `;
@@ -106,15 +115,17 @@ export class Notification {
 
     if (options.buttons) {
       options.buttons.forEach(btn => {
-        modal.querySelector(`.modal-btn-${btn.action}`).onclick = () => {
-          if (btn.onClick) {
-            btn.onClick();
-          }
-          modal.remove();
-        };
+        const safeAction = String(btn.action).replace(/[^a-zA-Z0-9_-]/g, '');
+        const el = modal.querySelector(`.modal-btn-${safeAction}`);
+        if (el) {
+          el.onclick = () => {
+            if (btn.onClick) btn.onClick();
+            modal.remove();
+          };
+        }
       });
     } else {
-        modal.querySelector('.modal-btn-close').onclick = () => modal.remove();
+      modal.querySelector('.modal-btn-close').onclick = () => modal.remove();
     }
 
 

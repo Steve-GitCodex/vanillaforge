@@ -1,4 +1,4 @@
-# 🔥 VanillaForge
+# VanillaForge
 
 **A small, zero-dependency JavaScript framework for building Single Page Applications with plain web standards.**
 
@@ -32,16 +32,40 @@ optimized bundle.
 
 ## Quick Start
 
+### Scaffold a new project
+
+```bash
+npx create-vanillaforge my-app
+cd my-app
+npm install
+npm run dev
+```
+
+The CLI prompts for a template. Pass `--template=<name>` to skip the prompt:
+
+```bash
+npx create-vanillaforge my-app --template=minimal   # no plugins
+npx create-vanillaforge my-app --template=full       # all plugins
+npx create-vanillaforge my-app --template=todo-app
+npx create-vanillaforge my-app --template=router-app
+```
+
+See [create-vanillaforge/README.md](create-vanillaforge/README.md) for the full CLI reference.
+
+### Install in an existing project
+
+```bash
+npm install vanillaforge
+```
+
+### Work on the framework itself
+
 ```bash
 git clone https://github.com/Steve-GitCodex/vanillaforge.git
 cd vanillaforge
 npm install
-
-# Run the demo (builds to dist/ and serves it)
-npm run dev
-
-# Or run an example directly (no build needed)
-npm run example          # Todo app
+npm run dev          # build to dist/ and serve
+npm run example      # Todo app (no build needed)
 npm run example:router   # Routing + params demo
 ```
 
@@ -170,6 +194,32 @@ and copies/minifies discovered CSS. See [docs/build-system.md](docs/build-system
 
 For maintainers returning after time away: see [DEVELOPMENT.md](DEVELOPMENT.md).
 
+## Security
+
+Templates return plain HTML strings — **escape all user-supplied values** before
+interpolating them. VanillaForge ships a dedicated helper:
+
+```javascript
+import { escapeHtml, html } from 'vanillaforge';  // or from './src/framework.js'
+
+// Escape individual values
+getTemplate() {
+  return `<h1>${escapeHtml(this.state.title)}</h1>`;
+}
+
+// Or use the html tagged template — every interpolation is auto-escaped
+getTemplate() {
+  return html`<h1>${this.state.title}</h1>`;
+}
+```
+
+`this.icon()` and `this.child()` already return safe `RawHtml` — no extra
+escaping needed. See [Components — Escaping and XSS](docs/components.md#escaping-and-xss).
+
+**Content Security Policy:** the theme, alerts, and fonts plugins inject
+`<style>` elements at runtime, so your CSP requires `style-src 'unsafe-inline'`
+(or a nonce/hash approach). Stricter CSP support is on the roadmap.
+
 ## Browser Support
 
 Modern browsers with ES2020+ support: Chrome 80+, Firefox 72+, Safari 14+, Edge 80+.
@@ -177,12 +227,10 @@ Modern browsers with ES2020+ support: Chrome 80+, Firefox 72+, Safari 14+, Edge 
 ## Roadmap
 
 All five built-in plugins (icons, theme, alerts, fonts, store), component
-composition, signals, route loaders, TypeScript types, and the scaffold CLI
-are shipped. What's next:
+composition, signals, route loaders, TypeScript types, the scaffold CLI, and
+npm publication of both `vanillaforge` and `create-vanillaforge` are complete.
 
-- **npm publish** — stable `2.0.0` release to the npm registry.
-
-Full details in [docs/roadmap.md](docs/roadmap.md).
+Full release history in [CHANGELOG.md](CHANGELOG.md).
 
 ## Contributing
 

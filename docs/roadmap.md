@@ -9,6 +9,68 @@ Every item below plugs into the **plugin/service registry** added in v1.1. See
 
 ---
 
+## Done (v1.9.2 — security + quality hardening)
+
+### HTML escaping primitive
+- `escapeHtml(value)` — canonical HTML escape for `& < > " '`; null/undefined → `''`.
+- `RawHtml` class — wraps a trusted string so the `html` tag passes it through unchanged.
+- `raw(value)` — convenience factory for `RawHtml`.
+- `html` tagged template — auto-escapes every interpolation; `RawHtml` values pass through.
+- `this.icon()` and `this.child()` now return `RawHtml`, so they are safe in both plain
+  template literals (via `toString()`) and `html` tagged templates (no double-escaping).
+- All three exported from `vanillaforge`: `import { html, raw, escapeHtml } from 'vanillaforge'`.
+- Full TypeScript generics added to `types/index.d.ts`.
+- `components.md` updated with an "Escaping and XSS" section; `README.md` updated with
+  a "Security" section and CSP note.
+
+### Security fixes
+- **notification.js `showModal`:** `title`, `message`, `details`, and button labels are now
+  escaped with `escapeHtml` before injection into `innerHTML`; button `action` values are
+  sanitised before use as CSS selectors. Closes the default-reachable XSS in the legacy
+  error notification path.
+- **Router param decoding:** dynamic route segments are now decoded with `decodeURIComponent`
+  (with a safe fallback for malformed input). `/users/John%20Doe` → `params.id === 'John Doe'`.
+  `router.md` updated with a note on decoded params and the escaping requirement.
+- **app.js error fallback:** replaced the inline `onclick="location.reload()"` (CSP-hostile)
+  with a programmatically created button + `addEventListener`.
+
+### Quality fixes
+- **event-bus `getListeners()` / `getStats()`:** fixed a crash (`this.onceListeners` was never
+  defined). Both methods now derive their data from the single `this.listeners` Map, splitting
+  by the `once` flag on each listener entry.
+- **`SweetAlert` deprecated:** `src/utils/sweet-alert.js` now carries a `@deprecated` JSDoc
+  banner pointing users to `alertsPlugin`. The class and its export are preserved until v2.0.
+- **`String.prototype.substr` removed:** replaced with `slice` in `base-component.js` and
+  `error-handler.js`.
+- **`base-component.js` formatting:** fixed glued JSDoc/signatures and a stray `}}` at end
+  of `cleanup()`.
+- **Shared `escapeHtml`:** the private duplicate copies in `icons-plugin.js` and
+  `alerts-plugin.js` have been replaced with an import from the shared `utils/html.js`.
+
+### Dev-dependency audit
+- `npm audit fix` applied; runtime audit remains at 0 vulnerabilities.
+  One remaining moderate in `http-server` (dev-only, never shipped) requires a
+  breaking upgrade and is deferred.
+
+---
+
+## Deferred to v2.0
+
+### Remove deprecated `SweetAlert` wrapper
+- Delete `src/utils/sweet-alert.js`, `src/styles/components/sweet-alert.css`, and the
+  `SweetAlert` export from `src/framework.js`. This is a breaking change and is bundled
+  into the 2.0 major release.
+
+### Stricter Content Security Policy support
+- Eliminate `style-src 'unsafe-inline'` requirement by moving theme/alerts/fonts injected
+  styles to adoptedStyleSheets (CSSStyleSheet constructor) or a nonce-based approach.
+
+### Version string single-sourcing
+- Remove hardcoded version strings from `home-component.js` and `framework.js`; derive
+  them from `package.json` at build time.
+
+---
+
 ## Done (v1.4)
 
 ### Self-hosted fonts plugin

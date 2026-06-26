@@ -192,4 +192,38 @@ class ChildComponent extends BaseComponent {
 
 ---
 
+## Escaping and XSS
+
+`getTemplate()` returns an HTML string that is set directly as `innerHTML`.
+**Every user-supplied or server-supplied value you interpolate must be escaped**
+before it reaches the template.
+
+VanillaForge ships a dedicated escaping helper in `src/utils/html.js` (also
+exported from `vanillaforge`):
+
+```javascript
+import { escapeHtml, html, raw } from 'vanillaforge';
+
+// Option 1 — escape individual values with escapeHtml()
+getTemplate() {
+  return `<h1>${escapeHtml(this.state.title)}</h1>
+          <p>${escapeHtml(this.state.body)}</p>`;
+}
+
+// Option 2 — use the html tagged template (auto-escapes every interpolation)
+getTemplate() {
+  return html`<h1>${this.state.title}</h1>
+              <p>${this.state.body}</p>
+              <span>${this.icon('check')}</span>`; // icon() returns RawHtml — not double-escaped
+}
+```
+
+`this.icon()` and `this.child()` already return `RawHtml`, so they are
+**safe to embed in both styles** without any extra wrapping.
+
+Use `raw(value)` only for HTML you fully control (e.g. static SVG literals,
+output from other trusted framework helpers). Never pass user input through `raw()`.
+
+---
+
 *Keep components small and focused on a single responsibility.*

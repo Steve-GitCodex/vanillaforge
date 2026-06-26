@@ -75,12 +75,12 @@ Node.js 18 or later.
 
 ## Documentation
 
-- [Full CLI reference](../docs/cli.md)
-- [Components Guide](../docs/components.md)
-- [Plugin System](../docs/plugins.md)
-- [Routing System](../docs/router.md)
-- [API Reference](../docs/API.md)
+- [Full CLI reference](https://github.com/Steve-GitCodex/vanillaforge/blob/main/docs/cli.md)
+- [Components Guide](https://github.com/Steve-GitCodex/vanillaforge/blob/main/docs/components.md)
+- [Plugin System](https://github.com/Steve-GitCodex/vanillaforge/blob/main/docs/plugins.md)
+- [Routing System](https://github.com/Steve-GitCodex/vanillaforge/blob/main/docs/router.md)
+- [API Reference](https://github.com/Steve-GitCodex/vanillaforge/blob/main/docs/API.md)
 
 ## License
 
-MIT — see [LICENSE](../LICENSE).
+MIT — see [LICENSE](https://github.com/Steve-GitCodex/vanillaforge/blob/main/LICENSE).

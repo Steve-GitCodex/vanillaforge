@@ -1,6 +1,6 @@
 {
   "name": "create-vanillaforge",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Scaffold a new VanillaForge project",
   "type": "module",
   "bin": {
@@ -8,7 +8,8 @@
   },
   "files": [
     "bin/",
-    "templates/"
+    "templates/",
+    "README.md"
   ],
   "engines": {
     "node": ">=18.0.0"
